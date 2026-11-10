@@ -1,0 +1,214 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useMemo } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { EventRow } from '../components/rows';
+import { Card, Screen, SectionHeader, T, tap, type IconName } from '../components/ui';
+import { monthRange, summarize } from '../lib/finance';
+import { daysBetween, formatMoney, MONTHS, toISODate } from '../lib/format';
+import type { Language } from '../lib/types';
+import type { RootStackParamList } from '../navigation/types';
+import { useAppStore } from '../store/useAppStore';
+import { colors, radius, space } from '../theme/tokens';
+
+type Nav = NativeStackNavigationProp<RootStackParamList>;
+
+export default function HomeScreen() {
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language as Language;
+  const nav = useNavigation<Nav>();
+  const profile = useAppStore((s) => s.profile);
+  const currency = useAppStore((s) => s.settings.currency);
+  const events = useAppStore((s) => s.events);
+  const records = useAppStore((s) => s.records);
+
+  const today = toISODate(new Date());
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? t('home.morning') : hour < 18 ? t('home.afternoon') : t('home.evening');
+
+  const upcoming = useMemo(
+    () =>
+      events
+        .filter((e) => e.date >= today)
+        .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time))
+        .slice(0, 3),
+    [events, today],
+  );
+
+  const briefing = useMemo(() => {
+    const todayCount = events.filter((e) => e.date === today).length;
+    const weekCount = events.filter((e) => {
+      const d = daysBetween(today, e.date);
+      return d > 0 && d <= 7;
+    }).length;
+    const overdue = records.filter((r) => r.status === 'overdue').length;
+    const lines: { icon: IconName; text: string; color: string }[] = [];
+    if (todayCount) lines.push({ icon: 'flash', text: t('home.briefingEventsToday', { count: todayCount }), color: colors.gold });
+    if (weekCount) lines.push({ icon: 'calendar', text: t('home.briefingEventsWeek', { count: weekCount }), color: colors.violet });
+    if (overdue) lines.push({ icon: 'alert-circle', text: t('home.briefingOverdue', { count: overdue }), color: colors.danger });
+    return lines;
+  }, [events, records, today, t]);
+
+  const sum = useMemo(() => summarize(records, currency, monthRange(today)), [records, currency, today]);
+  const month = MONTHS[lang].nom[new Date().getMonth()];
+
+  return (
+    <Screen>
+      <View style={styles.header}>
+        <View style={{ flex: 1 }}>
+          <T variant="caption">{greeting},</T>
+          <T variant="h1" numberOfLines={1}>
+            {profile?.stageName}
+          </T>
+        </View>
+        <View style={styles.avatar}>
+          <T variant="title" color={colors.onGold}>
+            {(profile?.stageName ?? '?').charAt(0).toUpperCase()}
+          </T>
+        </View>
+      </View>
+
+      {/* Daily briefing */}
+      <Card style={styles.briefing}>
+        <View style={styles.rowCenter}>
+          <Ionicons name="sparkles" size={18} color={colors.gold} />
+          <T variant="label" color={colors.gold}>
+            {t('home.briefingTitle')}
+          </T>
+        </View>
+        {briefing.length === 0 ? (
+          <T>{t('home.briefingEmpty')}</T>
+        ) : (
+          briefing.map((b) => (
+            <View key={b.text} style={styles.rowCenter}>
+              <Ionicons name={b.icon} size={18} color={b.color} />
+              <T variant="bodyLg">{b.text}</T>
+            </View>
+          ))
+        )}
+      </Card>
+
+      {/* Quick add */}
+      <View style={styles.quickRow}>
+        <QuickAction icon="calendar" label={t('home.addEvent')} onPress={() => nav.navigate('EventForm')} />
+        <QuickAction
+          icon="arrow-down"
+          label={t('home.addIncome')}
+          color={colors.success}
+          onPress={() => nav.navigate('RecordForm', { kind: 'income' })}
+        />
+        <QuickAction
+          icon="arrow-up"
+          label={t('home.addExpense')}
+          color={colors.danger}
+          onPress={() => nav.navigate('RecordForm', { kind: 'expense' })}
+        />
+      </View>
+
+      {/* Month summary */}
+      <Card>
+        <T variant="label">
+          {t('home.thisMonth')} · {month}
+        </T>
+        <T variant="display" color={sum.net >= 0 ? colors.text : colors.danger}>
+          {formatMoney(sum.net, currency, lang)}
+        </T>
+        <View style={styles.statsRow}>
+          <Stat label={t('home.income')} value={formatMoney(sum.income, currency, lang)} color={colors.success} />
+          <Stat label={t('home.expenses')} value={formatMoney(sum.expense, currency, lang)} color={colors.danger} />
+        </View>
+        <View style={styles.divider} />
+        <View style={styles.statsRow}>
+          <Stat label={t('home.owedToYou')} value={formatMoney(sum.owedToYou, currency, lang)} color={colors.gold} />
+          <Stat label={t('home.youOwe')} value={formatMoney(sum.youOwe, currency, lang)} color={colors.textMuted} />
+        </View>
+        <T variant="caption" color={colors.textFaint}>
+          {t('home.otherCurrencies', { currency })}
+        </T>
+      </Card>
+
+      <SectionHeader
+        title={t('home.upcoming')}
+        action={upcoming.length ? t('common.seeAll') : undefined}
+        onAction={() => nav.navigate('Tabs', { screen: 'Events' } as never)}
+      />
+      {upcoming.length === 0 ? (
+        <T color={colors.textMuted}>{t('home.noUpcoming')}</T>
+      ) : (
+        upcoming.map((e) => <EventRow key={e.id} event={e} onPress={() => nav.navigate('EventForm', { id: e.id })} />)
+      )}
+    </Screen>
+  );
+}
+
+function QuickAction({
+  icon,
+  label,
+  onPress,
+  color = colors.gold,
+}: {
+  icon: IconName;
+  label: string;
+  onPress: () => void;
+  color?: string;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={() => {
+        tap();
+        onPress();
+      }}
+      style={({ pressed }) => [styles.quick, pressed && { opacity: 0.8 }]}
+    >
+      <View style={[styles.quickIcon, { backgroundColor: color + '22' }]}>
+        <Ionicons name={icon} size={22} color={color} />
+      </View>
+      <T variant="caption" color={colors.text} numberOfLines={1}>
+        {label}
+      </T>
+    </Pressable>
+  );
+}
+
+function Stat({ label, value, color }: { label: string; value: string; color: string }) {
+  return (
+    <View style={{ flex: 1, gap: 2 }}>
+      <T variant="caption">{label}</T>
+      <T variant="bodyLg" color={color} numberOfLines={1}>
+        {value}
+      </T>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  header: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.gold,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  briefing: { backgroundColor: colors.surfaceAlt, borderColor: colors.gold + '55' },
+  rowCenter: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  quickRow: { flexDirection: 'row', gap: space.md },
+  quick: {
+    flex: 1,
+    alignItems: 'center',
+    gap: space.sm,
+    paddingVertical: space.md,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+  },
+  quickIcon: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
+  statsRow: { flexDirection: 'row', gap: space.md },
+  divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border },
+});
