@@ -17,6 +17,7 @@ import {
 } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 import { colors, font, radius, space, TAP } from '../theme/tokens';
+import { VoiceSheet } from '../voice/VoiceSheet';
 
 export type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -185,20 +186,59 @@ export function Field({
   hint,
   optional,
   optionalLabel,
+  voice,
   ...input
-}: TextInputProps & { label: string; error?: string; hint?: string; optional?: boolean; optionalLabel?: string }) {
+}: TextInputProps & {
+  label: string;
+  error?: string;
+  hint?: string;
+  optional?: boolean;
+  optionalLabel?: string;
+  /** Shows a microphone button; dictated text is appended to the value. */
+  voice?: boolean;
+}) {
+  const [listening, setListening] = React.useState(false);
+  const appendVoice = (text: string) => {
+    setListening(false);
+    const cur = (input.value ?? '').trim();
+    input.onChangeText?.(cur ? `${cur} ${text}` : text);
+  };
   return (
     <View style={styles.field}>
       <T variant="caption" color={colors.textMuted}>
         {label}
         {optional && optionalLabel ? <T variant="caption" color={colors.textFaint}>{`  ·  ${optionalLabel}`}</T> : null}
       </T>
-      <TextInput
-        placeholderTextColor={colors.textFaint}
-        selectionColor={colors.gold}
-        {...input}
-        style={[styles.input, input.multiline && styles.inputMultiline, error ? { borderColor: colors.danger } : null]}
-      />
+      <View>
+        <TextInput
+          placeholderTextColor={colors.textFaint}
+          selectionColor={colors.gold}
+          {...input}
+          style={[
+            styles.input,
+            input.multiline && styles.inputMultiline,
+            voice && { paddingRight: 52 },
+            error ? { borderColor: colors.danger } : null,
+          ]}
+        />
+        {voice ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`${label}: mic`}
+            onPress={() => {
+              tap();
+              setListening(true);
+            }}
+            hitSlop={8}
+            style={styles.fieldMic}
+          >
+            <Ionicons name="mic" size={20} color={colors.gold} />
+          </Pressable>
+        ) : null}
+      </View>
+      {voice ? (
+        <VoiceSheet visible={listening} mode="dictate" onClose={() => setListening(false)} onResult={appendVoice} />
+      ) : null}
       {error ? (
         <T variant="caption" color={colors.danger}>
           {error}
@@ -394,6 +434,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.lg,
     color: colors.text,
     fontSize: font.body,
+  },
+  fieldMic: {
+    position: 'absolute',
+    right: 6,
+    top: 6,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.goldSoft,
   },
   inputMultiline: { minHeight: 96, paddingTop: space.md, textAlignVertical: 'top' },
   chipsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },

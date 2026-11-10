@@ -1,11 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { EventRow } from '../components/rows';
 import { Card, Screen, SectionHeader, T, tap, type IconName } from '../components/ui';
+import { parseVoice } from '../lib/voiceParse';
+import { VoiceSheet } from '../voice/VoiceSheet';
 import { monthRange, summarize } from '../lib/finance';
 import { daysBetween, formatMoney, MONTHS, toISODate } from '../lib/format';
 import type { Language } from '../lib/types';
@@ -26,6 +28,13 @@ export default function HomeScreen() {
   const newBookings = useAppStore((s) => s.bookings.filter((b) => b.status === 'new').length);
 
   const today = toISODate(new Date());
+  const [voiceOpen, setVoiceOpen] = useState(false);
+  const onVoice = (text: string) => {
+    setVoiceOpen(false);
+    const draft = parseVoice(text, today);
+    if (draft.kind === 'event') nav.navigate('EventForm', { draft });
+    else nav.navigate('RecordForm', { kind: draft.kind, draft });
+  };
   const hour = new Date().getHours();
   const greeting = hour < 12 ? t('home.morning') : hour < 18 ? t('home.afternoon') : t('home.evening');
 
@@ -100,6 +109,30 @@ export default function HomeScreen() {
           ))
         )}
       </Card>
+
+      {/* Voice: one sentence -> pre-filled form */}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t('voice.addByVoice')}
+        onPress={() => {
+          tap();
+          setVoiceOpen(true);
+        }}
+        style={({ pressed }) => [styles.voice, pressed && { opacity: 0.85 }]}
+      >
+        <View style={styles.voiceMic}>
+          <Ionicons name="mic" size={26} color={colors.gold} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <T variant="bodyLg" color={colors.onGold}>
+            {t('voice.addByVoice')}
+          </T>
+          <T variant="caption" color={colors.onGold}>
+            {t('voice.addByVoiceBody')}
+          </T>
+        </View>
+      </Pressable>
+      <VoiceSheet visible={voiceOpen} mode="command" onClose={() => setVoiceOpen(false)} onResult={onVoice} />
 
       {/* Quick add */}
       <View style={styles.quickRow}>
@@ -209,6 +242,22 @@ const styles = StyleSheet.create({
   briefing: { backgroundColor: colors.surfaceAlt, borderColor: colors.gold + '55' },
   rowCenter: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   quickRow: { flexDirection: 'row', gap: space.md },
+  voice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    backgroundColor: colors.gold,
+    borderRadius: radius.lg,
+    padding: space.md,
+  },
+  voiceMic: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: colors.onGold,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   quick: {
     flex: 1,
     alignItems: 'center',

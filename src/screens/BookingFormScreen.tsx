@@ -173,6 +173,7 @@ export default function BookingFormScreen({ route, navigation }: RootProps<'Book
           options={CURRENCIES.map((c) => ({ value: c, label: `${currencySymbol(c)} ${c}` }))}
         />
         <Field
+          voice
           label={t('bookings.fields.message')}
           optional
           optionalLabel={t('common.optional')}

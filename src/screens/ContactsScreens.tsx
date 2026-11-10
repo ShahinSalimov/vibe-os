@@ -167,6 +167,7 @@ export function ContactFormScreen({ route, navigation }: RootProps<'ContactForm'
           error={errors.email}
         />
         <Field
+          voice
           label={t('contacts.fields.note')}
           optional
           optionalLabel={t('common.optional')}

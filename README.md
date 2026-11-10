@@ -30,6 +30,18 @@ Dillər: Azərbaycan, rus, ingilis.
 
 Buludu qoşmaq üçün: [docs/SETUP_CLOUD.md](docs/SETUP_CLOUD.md)
 
+## Səslə daxiletmə
+
+| Hissə | Vəziyyət |
+|---|---|
+| "Səslə əlavə et": bir cümlə → tədbir, gəlir və ya xərc forması avtomatik dolur | hazır |
+| Cümlə təhlili AZ / RU / EN: tarix, saat, növ, şəhər, məbləğ, avans, valyuta, ad | hazır, 17 real cümlə ilə test olunub |
+| Mətn sahələrində mikrofon düyməsi (diktə) | hazır |
+| Səslə deyilən heç nə özbaşına yadda saxlanmır, istifadəçi yoxlayıb təsdiqləyir | hazır |
+
+Qeyd: səs modulu Expo Go-da işləmir, development build tələb edir (`npx expo run:android` / `run:ios` və ya EAS Build). Expo Go-da tətbiq səs düyməsi əvəzinə klaviaturanın mikrofonunu təklif edir.
+Azərbaycan dilində tanıma Android-də (Google) dəstəklənir. iOS-da Azərbaycan dilinin dəstəyi real cihazda yoxlanmalıdır.
+
 ## Növbəti mərhələlər
 
 Müqavilələr, komanda və rollar (dəvət), rider/setlist, AI köməkçi.

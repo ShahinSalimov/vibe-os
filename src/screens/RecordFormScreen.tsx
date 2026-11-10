@@ -23,17 +23,18 @@ export default function RecordFormScreen({ route, navigation }: RootProps<'Recor
   const saveRecord = useAppStore((s) => s.saveRecord);
   const deleteRecord = useAppStore((s) => s.deleteRecord);
   const existing = id ? records.find((r) => r.id === id) : undefined;
+  const draft = !existing ? route.params?.draft : undefined;
   const linkedEvent = existing?.eventId ? events.find((e) => e.id === existing.eventId) : undefined;
 
   const [kind, setKind] = useState<TxKind>(existing?.kind ?? route.params?.kind ?? 'income');
-  const [counterparty, setCounterparty] = useState(existing?.counterparty ?? '');
-  const [amount, setAmount] = useState(existing ? String(existing.amount) : '');
+  const [counterparty, setCounterparty] = useState(existing?.counterparty ?? draft?.counterparty ?? '');
+  const [amount, setAmount] = useState(existing ? String(existing.amount) : draft?.amount ? String(draft.amount) : '');
   const [paid, setPaid] = useState(existing?.paidAmount ? String(existing.paidAmount) : '');
-  const [currency, setCurrency] = useState<Currency>(existing?.currency ?? defaultCurrency);
-  const [date, setDate] = useState(existing?.date ?? toISODate(new Date()));
+  const [currency, setCurrency] = useState<Currency>(existing?.currency ?? draft?.currency ?? defaultCurrency);
+  const [date, setDate] = useState(existing?.date ?? draft?.date ?? toISODate(new Date()));
   const [status, setStatus] = useState<TxStatus>(existing?.status ?? 'paid');
   const [category, setCategory] = useState(existing?.category ?? '');
-  const [note, setNote] = useState(existing?.note ?? '');
+  const [note, setNote] = useState(existing?.note ?? (draft ? draft.raw : ''));
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useLayoutEffect(() => {
@@ -93,7 +94,7 @@ export default function RecordFormScreen({ route, navigation }: RootProps<'Recor
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Screen edges={['bottom']}>
-        <Banner text={t('money.recordOnly')} />
+        {draft ? <Banner icon="mic" text={t('voice.review')} /> : <Banner text={t('money.recordOnly')} />}
         <Segmented
           value={kind}
           onChange={setKind}
@@ -109,6 +110,7 @@ export default function RecordFormScreen({ route, navigation }: RootProps<'Recor
         ) : null}
 
         <Field
+          voice
           label={kind === 'income' ? t('money.fields.from') : t('money.fields.to')}
           value={counterparty}
           onChangeText={setCounterparty}
@@ -175,6 +177,7 @@ export default function RecordFormScreen({ route, navigation }: RootProps<'Recor
           maxLength={60}
         />
         <Field
+          voice
           label={t('money.fields.note')}
           optional
           optionalLabel={t('common.optional')}

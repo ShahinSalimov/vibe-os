@@ -34,6 +34,16 @@
         {
           "faceIDPermission": "VIBE OS uses Face ID to protect your data."
         }
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "VIBE OS uses the microphone so you can add events and records by voice.",
+          "speechRecognitionPermission": "VIBE OS converts your voice to text to fill in events and records.",
+          "androidSpeechServicePackages": [
+            "com.google.android.googlequicksearchbox"
+          ]
+        }
       ]
     ],
     "backgroundColor": "#0B0A10"

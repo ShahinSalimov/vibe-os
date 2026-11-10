@@ -26,20 +26,24 @@ export default function EventFormScreen({ route, navigation }: RootProps<'EventF
   const saveRecord = useAppStore((s) => s.saveRecord);
 
   const existing = id ? events.find((e) => e.id === id) : undefined;
+  const draft = !existing ? route.params?.draft : undefined;
+  const draftTitle = draft
+    ? [draft.eventType ? t(`events.types.${draft.eventType}`) : '', draft.city, draft.counterparty].filter(Boolean).join(' · ')
+    : '';
   const linkedIncome = id ? records.find((r) => r.eventId === id && r.kind === 'income') : undefined;
 
-  const [title, setTitle] = useState(existing?.title ?? '');
-  const [type, setType] = useState<EventType>(existing?.type ?? 'wedding');
-  const [date, setDate] = useState(existing?.date ?? toISODate(new Date()));
-  const [time, setTime] = useState(existing?.time ?? '');
+  const [title, setTitle] = useState(existing?.title ?? draftTitle);
+  const [type, setType] = useState<EventType>(existing?.type ?? draft?.eventType ?? 'wedding');
+  const [date, setDate] = useState(existing?.date ?? draft?.date ?? toISODate(new Date()));
+  const [time, setTime] = useState(existing?.time ?? draft?.time ?? '');
   const [venue, setVenue] = useState(existing?.venue ?? '');
-  const [city, setCity] = useState(existing?.city ?? '');
-  const [organizer, setOrganizer] = useState(existing?.organizer ?? '');
+  const [city, setCity] = useState(existing?.city ?? draft?.city ?? '');
+  const [organizer, setOrganizer] = useState(existing?.organizer ?? draft?.counterparty ?? '');
   const [organizerPhone, setOrganizerPhone] = useState(existing?.organizerPhone ?? '');
-  const [fee, setFee] = useState(existing?.fee ? String(existing.fee) : '');
-  const [advance, setAdvance] = useState(existing?.advance ? String(existing.advance) : '');
-  const [currency, setCurrency] = useState<Currency>(existing?.currency ?? defaultCurrency);
-  const [notes, setNotes] = useState(existing?.notes ?? '');
+  const [fee, setFee] = useState(existing?.fee ? String(existing.fee) : draft?.amount ? String(draft.amount) : '');
+  const [advance, setAdvance] = useState(existing?.advance ? String(existing.advance) : draft?.advance ? String(draft.advance) : '');
+  const [currency, setCurrency] = useState<Currency>(existing?.currency ?? draft?.currency ?? defaultCurrency);
+  const [notes, setNotes] = useState(existing?.notes ?? (draft ? draft.raw : ''));
   const [addToMoney, setAddToMoney] = useState(true);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -122,7 +126,9 @@ export default function EventFormScreen({ route, navigation }: RootProps<'EventF
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Screen edges={['bottom']}>
+        {draft ? <Banner icon="mic" text={t('voice.review')} /> : null}
         <Field
+          voice
           label={t('events.fields.title')}
           value={title}
           onChangeText={setTitle}
@@ -247,6 +253,7 @@ export default function EventFormScreen({ route, navigation }: RootProps<'EventF
         </Card>
 
         <Field
+          voice
           label={t('events.fields.notes')}
           optional
           optionalLabel={t('common.optional')}
