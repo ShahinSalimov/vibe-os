@@ -73,6 +73,18 @@ Müqavilə şablonları hüquqi məsləhət deyil, tətbiq bunu istifadəçiyə 
 Qeydiyyatda (istəyə bağlı) və "Digər" bölməsində seçilir. Əsas ekranda, profil kartında və kilid ekranında göstərilir.
 Telefonun ana ekranındakı tətbiq ikonu hər istifadəçi üçün dəyişdirilə bilmir (iOS və Android məhdudiyyəti).
 
+## Satış
+
+| Hissə | Vəziyyət |
+|---|---|
+| 3 günlük sınaq, birdəfəlik aktivasiya kodu, serverdə qoruma | hazır |
+| Demo rejimi (nümunə məlumatlarla, buluda heç nə göndərmir) | hazır |
+| Admin panel (`admin/`): kodlar, müştərilər, sınağı uzatmaq, dayandırmaq | hazır |
+| 6 tema, tətbiq ikonu və açılış ekranı | hazır |
+| Əsas ekran: bu günün tam planı | hazır |
+
+Sıfırdan ilk satışa qədər: [docs/SELLER_GUIDE.md](docs/SELLER_GUIDE.md)
+
 ## Növbəti mərhələlər
 
 Komanda və rollar (dəvət), tapşırıqlar, səs fayllarının və imzalı nüsxələrin buluda yüklənməsi, AI köməkçi.

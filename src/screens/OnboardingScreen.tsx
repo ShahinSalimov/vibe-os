@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { Image, KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { EditableAvatar } from '../components/Avatar';
 import { ThemePicker } from '../components/ThemePicker';
@@ -61,9 +61,7 @@ export default function OnboardingScreen() {
       <Screen edges={['top', 'bottom']} contentStyle={{ flexGrow: 1 }}>
         {step === 0 ? (
           <View style={styles.welcome}>
-            <View style={styles.logo}>
-              <Ionicons name="pulse" size={40} color={colors.onGold} />
-            </View>
+            <Image source={require('../../assets/icon.png')} style={styles.logo} accessibilityIgnoresInvertColors />
             <T variant="display">VIBE OS</T>
             <T variant="title">{t('onboarding.welcomeTitle')}</T>
             <T color={colors.textMuted}>{t('onboarding.welcomeBody')}</T>
@@ -201,12 +199,9 @@ const styles = themed(() =>
   StyleSheet.create({
   welcome: { flex: 1, gap: space.md, paddingTop: space.xl },
   logo: {
-    width: 72,
-    height: 72,
-    borderRadius: 22,
-    backgroundColor: colors.gold,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 76,
+    height: 76,
+    borderRadius: 20,
     marginBottom: space.sm,
   },
   langRow: {
