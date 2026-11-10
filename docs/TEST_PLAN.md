@@ -45,6 +45,10 @@ Səbəb: quraşdırma zamanı faylları başqa proqram tutur (Windows Defender, 
    ```bash
    npx expo start --go
    ```
+6. `npx` "spawn cmd.exe ENOENT" xətası versə (antivirus Node-un cmd.exe açmasını bloklayır), Expo-nu birbaşa işə sal:
+   ```bash
+   node node_modules/expo/bin/cli start --go
+   ```
 
 ### Yol B (Android, səs tanıma ilə)
 ```bash
