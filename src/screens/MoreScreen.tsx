@@ -9,6 +9,7 @@ import type { RootStackParamList } from '../navigation/types';
 import { Platform, StyleSheet, Switch, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '../components/Avatar';
+import { DemoBanner } from '../demo/DemoBanner';
 import { ThemePicker } from '../components/ThemePicker';
 import { Button, Card, Chips, Screen, SectionHeader, T, type IconName } from '../components/ui';
 import { confirmAction, notify } from '../lib/confirm';
@@ -81,6 +82,7 @@ export default function MoreScreen() {
   return (
     <Screen>
       <T variant="h1">{t('more.title')}</T>
+      <DemoBanner />
 
       <Pressable
         accessibilityRole="button"

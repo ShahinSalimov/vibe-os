@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, Share, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { DemoCloudOff } from '../../demo/DemoCloudOff';
 import { Banner, Button, Card, Chips, Field, Screen, SectionHeader, T, tap } from '../../components/ui';
 import { isCloudConfigured } from '../../cloud/config';
 import { changeRole, createInvite, formatInviteCode, joinTeam, loadMembers, removeMember } from '../../cloud/team';
@@ -100,6 +101,7 @@ export default function TeamScreen({ navigation }: RootProps<'Team'>) {
   if (!isCloudConfigured() || !signedIn) {
     return (
       <Screen edges={['bottom']}>
+        <DemoCloudOff />
         <Banner icon="people" text={isCloudConfigured() ? t('team.signInFirst') : t('account.notConfigured')} />
         {isCloudConfigured() ? (
           <Button label={t('account.verify')} icon="log-in" onPress={() => navigation.navigate('Account')} />
@@ -111,6 +113,7 @@ export default function TeamScreen({ navigation }: RootProps<'Team'>) {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Screen edges={['bottom']}>
+        <DemoCloudOff />
         {error ? <Banner tone="danger" icon="alert-circle" text={error} /> : null}
         {info ? <Banner icon="checkmark-circle" text={info} /> : null}
 

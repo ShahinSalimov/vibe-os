@@ -228,7 +228,7 @@ function Line({
           {title}
         </T>
         {sub ? (
-          <T variant="caption" color={subColor} numberOfLines={1}>
+          <T variant="caption" color={subColor} numberOfLines={2}>
             {sub}
           </T>
         ) : null}

@@ -3,6 +3,10 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { newId } from '../lib/id';
 import { emptyCloud, migrateStore } from './migrate';
+import { buildDemoData } from '../demo/demoData';
+
+const toISODateLocal = (dt: Date) =>
+  `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
 import { mergeRemote, mappers } from '../lib/sync';
 import type {
   Task,
@@ -97,6 +101,8 @@ interface AppState {
   applyRemote: (table: SyncTable, rows: Record<string, unknown>[]) => void;
   clearTombstones: (upTo: string) => void;
 
+  /** Fills the app with sample data for a presentation (see demo/demoData). */
+  loadDemo: (lang: Settings['language'], theme: Settings['theme']) => void;
   resetAll: () => void;
 }
 
@@ -377,6 +383,28 @@ export const useAppStore = create<AppState>()(
           return left.length === s.tombstones.length ? {} : { tombstones: left };
         }),
 
+      loadDemo: (lang, theme) => {
+        const today = toISODateLocal(new Date());
+        const d = buildDemoData(lang, today, now());
+        set({
+          profile: { ...d.profile, createdAt: now() },
+          settings: { language: lang, currency: 'AZN', appLock: false, theme, demo: true },
+          events: d.events,
+          records: d.records,
+          bookings: d.bookings,
+          contacts: d.contacts,
+          songs: d.songs,
+          setlists: d.setlists,
+          contracts: d.contracts,
+          riders: d.riders,
+          tasks: d.tasks,
+          assets: [],
+          docs: [],
+          tombstones: [],
+          members: [],
+          cloud: emptyCloud,
+        });
+      },
       resetAll: () =>
         set({
           profile: null,

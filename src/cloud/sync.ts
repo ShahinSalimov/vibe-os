@@ -134,6 +134,8 @@ export async function refreshLicense(sb: SupabaseClient, ws: string): Promise<vo
 async function doSync(): Promise<SyncResult> {
   const sb = getClient();
   if (!sb) return { ok: false, error: 'not_configured' };
+  // Demo data must never reach the server.
+  if (useAppStore.getState().settings.demo) return { ok: false, error: 'demo' };
   const { data: sess } = await sb.auth.getSession();
   if (!sess.session) return { ok: false, error: 'not_signed_in' };
   const userId = sess.session.user.id;

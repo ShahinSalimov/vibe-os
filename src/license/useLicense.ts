@@ -7,11 +7,12 @@ import { canWriteWithLicense, licenseState, type LicenseState } from './license'
 export function useLicense(): { state: LicenseState; canWrite: boolean } {
   const server = useAppStore((s) => s.cloud.license);
   const localStart = useAppStore((s) => s.profile?.createdAt ?? null);
+  const demo = useAppStore((s) => !!s.settings.demo);
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 60_000);
     return () => clearInterval(id);
   }, []);
-  const state = licenseState({ cloudConfigured: isCloudConfigured(), server, localStart, now });
+  const state = licenseState({ cloudConfigured: isCloudConfigured() && !demo, server, localStart, now });
   return { state, canWrite: canWriteWithLicense(state) };
 }

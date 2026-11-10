@@ -44,6 +44,8 @@ export interface Settings {
   appLock: boolean;
   /** Visual theme id (see theme/tokens THEMES). Missing = 'stage'. */
   theme?: 'stage' | 'rose' | 'amethyst' | 'ocean' | 'graphite' | 'daylight';
+  /** Sales demo with sample data: never synced, no licence limits. */
+  demo?: boolean;
 }
 
 /** ISO date "YYYY-MM-DD" */

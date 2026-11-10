@@ -6,6 +6,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '../components/Avatar';
 import { AgendaCard } from '../components/AgendaCard';
+import { DemoBanner } from '../demo/DemoBanner';
 import { EventRow } from '../components/rows';
 import { Card, IconButton, Screen, SectionHeader, T, tap, type IconName } from '../components/ui';
 import { buildAgenda } from '../lib/agenda';
@@ -132,6 +133,8 @@ export default function HomeScreen() {
           onPress={() => nav.navigate('Tabs', { screen: 'More' } as never)}
         />
       </View>
+
+      <DemoBanner />
 
       {lic.kind === 'trial' || lic.kind === 'expired' || lic.kind === 'suspended' ? (
         <Pressable

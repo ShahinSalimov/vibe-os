@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { DemoCloudOff } from '../demo/DemoCloudOff';
 import type { TFunction } from 'i18next';
 import { Banner, Button, Card, Field, Screen, T } from '../components/ui';
 import { currentUserEmail, isEmail, sendCode, signOut, verifyCode } from '../cloud/auth';
@@ -104,6 +105,7 @@ export default function AccountScreen({ navigation }: RootProps<'Account'>) {
   if (!isCloudConfigured()) {
     return (
       <Screen edges={['bottom']}>
+        <DemoCloudOff />
         <Banner icon="cloud-offline" text={t('account.notConfigured')} />
       </Screen>
     );
@@ -116,6 +118,7 @@ export default function AccountScreen({ navigation }: RootProps<'Account'>) {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Screen edges={['bottom']}>
+        <DemoCloudOff />
         {cloud.email ? (
           <>
             <Card style={styles.center}>

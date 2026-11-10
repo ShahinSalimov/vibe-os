@@ -34,6 +34,7 @@ export default function OnboardingScreen() {
   // Theme preview during onboarding: kept in the store so the whole screen re-renders in the new colours.
   const theme = useAppStore((s) => s.settings.theme ?? 'stage');
   const updateSettings = useAppStore((s) => s.updateSettings);
+  const loadDemo = useAppStore((s) => s.loadDemo);
   const [step, setStep] = useState(0);
   const [language, setLanguage] = useState<Language>(i18n.language as Language);
   const [stageName, setStageName] = useState('');
@@ -91,6 +92,10 @@ export default function OnboardingScreen() {
             </View>
             <View style={{ flex: 1 }} />
             <Button label={t('common.next')} icon="arrow-forward" onPress={() => setStep(1)} />
+            <Button label={t('demo.open')} icon="play-circle" variant="secondary" onPress={() => loadDemo(language, theme)} />
+            <T variant="caption" style={{ textAlign: 'center' }}>
+              {t('demo.openHint')}
+            </T>
           </View>
         ) : (
           <View style={{ flex: 1, gap: space.lg }}>

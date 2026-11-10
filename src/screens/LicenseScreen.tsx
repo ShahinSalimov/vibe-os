@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useLayoutEffect, useState } from 'react';
 import { KeyboardAvoidingView, Linking, Platform, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { DemoCloudOff } from '../demo/DemoCloudOff';
 import { Banner, Button, Card, Field, Screen, T } from '../components/ui';
 import { isCloudConfigured, SELLER_CONTACT_URL } from '../cloud/config';
 import { redeemLicense } from '../cloud/license';
@@ -69,6 +70,7 @@ export default function LicenseScreen({ navigation }: RootProps<'License'>) {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Screen edges={['bottom']}>
+        <DemoCloudOff />
         <Card style={styles.head}>
           <View style={[styles.badge, { backgroundColor: head.color + '22' }]}>
             <Ionicons name={head.icon} size={34} color={head.color} />

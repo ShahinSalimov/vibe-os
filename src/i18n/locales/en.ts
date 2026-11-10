@@ -657,6 +657,16 @@ const en = {
     sign: 'Sign: {{title}}',
     tomorrow: 'Tomorrow',
   },
+  demo: {
+    open: 'See the demo',
+    openHint: 'A full example with weddings, concerts, money and songs. Nothing is sent anywhere.',
+    banner: 'Demo mode',
+    bannerBody: 'Sample data. Tap to start with your own.',
+    start: 'Start for real',
+    exitTitle: 'Leave the demo?',
+    exitBody: 'The sample data will be removed and you will set up your own profile.',
+    cloudOff: 'Cloud, team and activation are off in the demo.',
+  },
   calendar: {
     pick: 'Pick a date',
   },

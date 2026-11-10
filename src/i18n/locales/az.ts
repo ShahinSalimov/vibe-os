@@ -659,6 +659,16 @@ const az: Dictionary = {
     sign: 'İmzala: {{title}}',
     tomorrow: 'Sabah',
   },
+  demo: {
+    open: 'Demonu aç',
+    openHint: 'Toylar, konsertlər, maliyyə və mahnılarla tam nümunə. Heç nə heç yerə göndərilmir.',
+    banner: 'Demo rejimi',
+    bannerBody: 'Nümunə məlumatlar. Öz məlumatlarınızla başlamaq üçün toxunun.',
+    start: 'Öz məlumatlarımla başla',
+    exitTitle: 'Demodan çıxılsın?',
+    exitBody: 'Nümunə məlumatlar silinəcək və öz profilinizi quracaqsınız.',
+    cloudOff: 'Demo rejimində bulud, komanda və aktivləşdirmə işləmir.',
+  },
   calendar: {
     pick: 'Tarix seçin',
   },

@@ -14,7 +14,7 @@ const DEBOUNCE_MS = 3000;
 export function useAutoSync() {
   useEffect(() => {
     if (!isCloudConfigured()) return;
-    const signedIn = () => !!useAppStore.getState().cloud.email;
+    const signedIn = () => !!useAppStore.getState().cloud.email && !useAppStore.getState().settings.demo;
     let timer: ReturnType<typeof setTimeout> | null = null;
     const schedule = (delay = DEBOUNCE_MS) => {
       if (!signedIn()) return;
