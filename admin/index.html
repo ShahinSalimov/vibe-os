@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="az">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="robots" content="noindex, nofollow" />
+<meta name="theme-color" content="#0B0A10" />
+<title>VIBE OS · Admin</title>
+<style>
+  :root { --bg:#0B0A10; --surface:#15131D; --alt:#1E1B29; --border:#2B2738; --text:#F5F3FA; --muted:#A19CB0; --faint:#6E6980;
+          --gold:#F5B841; --gold-soft:rgba(245,184,65,.14); --on-gold:#1A1405; --violet:#8B5CF6; --violet-soft:rgba(139,92,246,.16);
+          --green:#34D399; --green-soft:rgba(52,211,153,.14); --red:#F87171; --red-soft:rgba(248,113,113,.14); --amber:#FBBF24; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; }
+  main { max-width: 1040px; margin: 0 auto; padding: 18px 16px 60px; }
+  header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; }
+  .brand { display:flex; align-items:center; gap:10px; font-weight:800; }
+  .logo { width:30px; height:30px; border-radius:9px; background:var(--gold); }
+  h1 { font-size:22px; margin:0; } h2 { font-size:17px; margin:0 0 10px; }
+  .muted { color:var(--muted); } .small { font-size:13px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; }
+  .grid { display:grid; gap:12px; }
+  .stats { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom:14px; }
+  .stat b { display:block; font-size:28px; }
+  .stat.hot { border-color: var(--gold); background: var(--gold-soft); }
+  input, textarea { width:100%; min-height:46px; background:var(--alt); color:var(--text); border:1px solid var(--border); border-radius:12px; padding:10px 12px; font:inherit; }
+  input:focus { outline:2px solid var(--gold); border-color:transparent; }
+  button { min-height:42px; border:0; border-radius:12px; padding:0 14px; font:inherit; font-weight:700; cursor:pointer; background:var(--alt); color:var(--text); border:1px solid var(--border); }
+  button.primary { background:var(--gold); color:var(--on-gold); border-color:var(--gold); }
+  button.danger { background:var(--red-soft); color:var(--red); border-color:transparent; }
+  button.small { min-height:34px; padding:0 10px; font-size:13px; }
+  button[disabled] { opacity:.5; cursor:wait; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .row > input { flex:1; min-width:200px; }
+  .codebox { margin-top:12px; padding:14px; border-radius:12px; background:var(--alt); display:none; }
+  .code { font-size:clamp(20px, 7.2vw, 30px); font-weight:800; letter-spacing:2px; margin:6px 0; white-space:nowrap; }
+  pre.msg { white-space:pre-wrap; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:10px; margin:8px 0; font:inherit; font-size:14px; }
+  table { width:100%; border-collapse:collapse; }
+  th, td { text-align:left; padding:10px 8px; border-bottom:1px solid var(--border); vertical-align:top; }
+  th { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.5px; font-weight:700; }
+  .badge { display:inline-block; padding:2px 9px; border-radius:999px; font-size:12px; font-weight:700; white-space:nowrap; }
+  .b-active { background:var(--green-soft); color:var(--green); } .b-trial { background:var(--gold-soft); color:var(--gold); }
+  .b-expired { background:var(--red-soft); color:var(--red); } .b-suspended { background:var(--alt); color:var(--faint); }
+  .b-open { background:var(--violet-soft); color:var(--violet); } .b-used { background:var(--green-soft); color:var(--green); }
+  .tabs { display:flex; gap:6px; margin: 18px 0 10px; }
+  .tabs button[aria-pressed="true"] { background:var(--alt); border-color:var(--gold); }
+  .err { background:var(--red-soft); color:var(--text); border-radius:12px; padding:10px 12px; margin:10px 0; display:none; }
+  .ok { background:var(--green-soft); border-radius:12px; padding:10px 12px; margin:10px 0; display:none; }
+  .hidden { display:none !important; }
+  @media (max-width: 720px) {
+    thead { display:none; } table, tbody, tr, td { display:block; width:100%; }
+    tr { border:1px solid var(--border); border-radius:14px; padding:8px; margin-bottom:10px; background:var(--surface); }
+    td { border:0; padding:4px 6px; }
+    td[data-l]::before { content: attr(data-l) ": "; color: var(--muted); font-size:12px; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="brand"><span class="logo" aria-hidden="true"></span><h1>VIBE OS · Admin</h1></div>
+    <button id="logout" class="small hidden">Çıx</button>
+  </header>
+
+  <div id="err" class="err" role="alert"></div>
+  <div id="ok" class="ok" role="status"></div>
+
+  <!-- Login -->
+  <section id="login" class="card" style="max-width:420px">
+    <h2>Giriş</h2>
+    <p class="muted small">Admin hesabının e-poçtunu yazın. 6 rəqəmli kod gələcək.</p>
+    <div id="stepEmail" class="grid">
+      <input id="email" type="email" placeholder="ad@example.com" autocomplete="email" />
+      <button id="sendCode" class="primary">Kodu göndər</button>
+    </div>
+    <div id="stepCode" class="grid hidden">
+      <input id="otp" inputmode="numeric" maxlength="6" placeholder="123456" autocomplete="one-time-code" />
+      <button id="verify" class="primary">Daxil ol</button>
+    </div>
+  </section>
+
+  <!-- Dashboard -->
+  <section id="app" class="hidden">
+    <div class="grid stats">
+      <div class="card stat"><span class="muted small">Cəmi müştəri</span><b id="sTotal">0</b></div>
+      <div class="card stat"><span class="muted small">Ödəyib (aktiv)</span><b id="sActive">0</b></div>
+      <div class="card stat"><span class="muted small">Sınaqda</span><b id="sTrial">0</b></div>
+      <div class="card stat hot"><span class="muted small">Sınağı bitib, almayıb</span><b id="sExpired">0</b></div>
+    </div>
+
+    <div class="card">
+      <h2>Aktivasiya kodu yarat</h2>
+      <div class="row">
+        <input id="note" maxlength="200" placeholder="Qeyd: müştərinin adı, Instagram, ödəniş (məs. Aysel · @aysel · 150 AZN)" />
+        <button id="create" class="primary">Kod yarat</button>
+      </div>
+      <div id="codebox" class="codebox">
+        <span class="muted small">Yeni kod (birdəfəlik)</span>
+        <div id="newCode" class="code"></div>
+        <div class="row"><button id="copyAz" class="small">AZ mesajı kopyala</button><button id="copyRu" class="small">RU mesajı kopyala</button><button id="copyCode" class="small">Yalnız kodu kopyala</button></div>
+        <pre id="msgAz" class="msg"></pre>
+      </div>
+    </div>
+
+    <div class="tabs" role="tablist">
+      <button id="tabArtists" aria-pressed="true">Müştərilər</button>
+      <button id="tabCodes" aria-pressed="false">Kodlar</button>
+    </div>
+    <div class="row" style="margin-bottom:10px"><input id="search" placeholder="Axtar: ad, e-poçt, kod, qeyd" /></div>
+
+    <div id="artists" class="card" style="padding:6px 10px">
+      <table>
+        <thead><tr><th>Sənətçi</th><th>Hesab</th><th>Status</th><th>Komanda</th><th>Qoşulub</th><th></th></tr></thead>
+        <tbody id="artistRows"></tbody>
+      </table>
+    </div>
+    <div id="codes" class="card hidden" style="padding:6px 10px">
+      <table>
+        <thead><tr><th>Kod</th><th>Qeyd</th><th>Status</th><th>Yaradılıb</th><th></th></tr></thead>
+        <tbody id="codeRows"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script src="config.js"></script>
+<script>
+(function () {
+  'use strict';
+  var CFG = window.VIBE_CONFIG || {};
+  var BASE = (CFG.supabaseUrl || '').replace(/\/$/, '');
+  var $ = function (id) { return document.getElementById(id); };
+  var session = null; // { access_token, refresh_token, expires_at }
+  var data = { artists: [], codes: [] };
+  var tab = 'artists';
+
+  function show(el, on) { el.classList.toggle('hidden', !on); }
+  function msg(kind, text) {
+    var el = $(kind); el.textContent = text || ''; el.style.display = text ? 'block' : 'none';
+    if (kind === 'ok' && text) setTimeout(function () { el.style.display = 'none'; }, 3500);
+  }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+  function fmtCode(c) { return (c || '').match(/.{1,4}/g).join('-'); }
+  function fmtDate(iso) { if (!iso) return '—'; var d = new Date(iso); return d.toLocaleDateString('az-AZ', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
+  var ERR = {
+    not_admin: 'Bu hesab admin deyil. Admin əlavə etmək üçün təlimata baxın.',
+    invalid_status: 'Yanlış status.',
+  };
+  function errText(m) { for (var k in ERR) if (String(m).indexOf(k) >= 0) return ERR[k]; return 'Xəta: ' + m; }
+
+  function api(path, body, auth) {
+    var headers = { 'Content-Type': 'application/json', apikey: CFG.anonKey };
+    if (auth && session) headers.Authorization = 'Bearer ' + session.access_token;
+    return fetch(BASE + path, { method: 'POST', headers: headers, body: JSON.stringify(body || {}) }).then(function (r) {
+      return r.text().then(function (t) {
+        var j = null; try { j = t ? JSON.parse(t) : null; } catch (e) { j = t; }
+        if (!r.ok) throw new Error((j && (j.message || j.msg || j.error_description || j.error)) || ('HTTP ' + r.status));
+        return j;
+      });
+    });
+  }
+  function saveSession(s) {
+    session = s ? { access_token: s.access_token, refresh_token: s.refresh_token, expires_at: Date.now() + (s.expires_in || 3600) * 1000 } : null;
+    try { s ? sessionStorage.setItem('vibe-admin', JSON.stringify(session)) : sessionStorage.removeItem('vibe-admin'); } catch (e) {}
+  }
+  function ensureFresh() {
+    if (!session) return Promise.reject(new Error('not signed in'));
+    if (session.expires_at - Date.now() > 60000) return Promise.resolve();
+    return api('/auth/v1/token?grant_type=refresh_token', { refresh_token: session.refresh_token }).then(saveSession);
+  }
+  function rpc(name, body) { return ensureFresh().then(function () { return api('/rest/v1/rpc/' + name, body || {}, true); }); }
+
+  // ---------- login ----------
+  $('sendCode').onclick = function () {
+    var email = $('email').value.trim(); if (!email) return;
+    this.disabled = true; var btn = this; msg('err', '');
+    api('/auth/v1/otp', { email: email, create_user: false }).then(function () {
+      show($('stepEmail'), false); show($('stepCode'), true); $('otp').focus();
+    }).catch(function (e) { msg('err', errText(e.message)); }).then(function () { btn.disabled = false; });
+  };
+  $('verify').onclick = function () {
+    var btn = this; btn.disabled = true; msg('err', '');
+    api('/auth/v1/verify', { type: 'email', email: $('email').value.trim(), token: $('otp').value.trim() })
+      .then(function (s) { saveSession(s); return start(); })
+      .catch(function (e) { msg('err', /token|otp|expired|invalid/i.test(e.message) ? 'Kod səhvdir və ya vaxtı keçib.' : errText(e.message)); })
+      .then(function () { btn.disabled = false; });
+  };
+  $('logout').onclick = function () { saveSession(null); location.reload(); };
+
+  function start() {
+    return rpc('is_platform_admin').then(function (isAdmin) {
+      if (!isAdmin) { saveSession(null); throw new Error('not_admin'); }
+      show($('login'), false); show($('app'), true); show($('logout'), true);
+      return refresh();
+    });
+  }
+  function refresh() {
+    return Promise.all([rpc('admin_overview'), rpc('admin_codes')]).then(function (r) {
+      data.artists = r[0] || []; data.codes = r[1] || []; render();
+    }).catch(function (e) { msg('err', errText(e.message)); });
+  }
+
+  // ---------- render ----------
+  function statusOf(a) {
+    if (a.status === 'active') return { cls: 'b-active', text: 'Aktiv (ödəyib)', key: 'active' };
+    if (a.status === 'suspended') return { cls: 'b-suspended', text: 'Dayandırılıb', key: 'suspended' };
+    var left = Math.ceil((new Date(a.trial_ends_at) - Date.now()) / 86400000);
+    return left > 0 ? { cls: 'b-trial', text: 'Sınaq · ' + left + ' gün', key: 'trial' } : { cls: 'b-expired', text: 'Sınaq bitib', key: 'expired' };
+  }
+  function render() {
+    var q = $('search').value.trim().toLowerCase();
+    var counts = { active: 0, trial: 0, expired: 0, suspended: 0 };
+    data.artists.forEach(function (a) { counts[statusOf(a).key]++; });
+    $('sTotal').textContent = data.artists.length; $('sActive').textContent = counts.active;
+    $('sTrial').textContent = counts.trial; $('sExpired').textContent = counts.expired;
+
+    var rows = data.artists.filter(function (a) {
+      return !q || [a.stage_name, a.owner_email, a.slug, a.code].join(' ').toLowerCase().indexOf(q) >= 0;
+    }).map(function (a) {
+      var st = statusOf(a);
+      var acts = '';
+      if (st.key === 'trial' || st.key === 'expired') acts += '<button class="small" data-act="extend" data-ws="' + esc(a.workspace_id) + '">+3 gün</button> ';
+      if (st.key !== 'active') acts += '<button class="small" data-act="active" data-ws="' + esc(a.workspace_id) + '">Aktivləşdir</button> ';
+      if (st.key !== 'suspended') acts += '<button class="small danger" data-act="suspended" data-ws="' + esc(a.workspace_id) + '">Dayandır</button>';
+      return '<tr><td data-l="Sənətçi"><b>' + esc(a.stage_name) + '</b><div class="muted small">' + esc(a.slug) + '</div></td>' +
+        '<td data-l="Hesab">' + esc(a.owner_email || '—') + '</td>' +
+        '<td data-l="Status"><span class="badge ' + st.cls + '">' + st.text + '</span>' + (a.code ? '<div class="muted small">' + esc(fmtCode(a.code)) + '</div>' : '') + '</td>' +
+        '<td data-l="Komanda">' + esc(a.members) + '</td>' +
+        '<td data-l="Qoşulub">' + fmtDate(a.created_at) + '</td><td>' + acts + '</td></tr>';
+    });
+    $('artistRows').innerHTML = rows.join('') || '<tr><td class="muted">Hələ müştəri yoxdur.</td></tr>';
+
+    var names = {}; data.artists.forEach(function (a) { names[a.workspace_id] = a.stage_name; });
+    var crow = data.codes.filter(function (c) {
+      return !q || [c.code, c.note, names[c.redeemed_workspace]].join(' ').toLowerCase().indexOf(q) >= 0;
+    }).map(function (c) {
+      var st = c.revoked ? '<span class="badge b-suspended">Ləğv edilib</span>'
+        : c.redeemed_workspace ? '<span class="badge b-used">İstifadə olunub</span><div class="muted small">' + esc(names[c.redeemed_workspace] || '') + ' · ' + fmtDate(c.redeemed_at) + '</div>'
+        : '<span class="badge b-open">Açıq</span>';
+      var act = !c.revoked && !c.redeemed_workspace ? '<button class="small danger" data-act="revoke" data-code="' + esc(c.code) + '">Ləğv et</button>' : '';
+      return '<tr><td data-l="Kod"><b>' + esc(fmtCode(c.code)) + '</b></td><td data-l="Qeyd">' + esc(c.note || '—') + '</td><td data-l="Status">' + st + '</td><td data-l="Yaradılıb">' + fmtDate(c.created_at) + '</td><td>' + act + '</td></tr>';
+    });
+    $('codeRows').innerHTML = crow.join('') || '<tr><td class="muted">Hələ kod yoxdur.</td></tr>';
+  }
+
+  // ---------- actions ----------
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest('button[data-act]'); if (!b) return;
+    var act = b.getAttribute('data-act');
+    if (act === 'revoke' && !confirm('Kod ləğv edilsin?')) return;
+    if (act === 'suspended' && !confirm('Bu sənətçinin lisenziyası dayandırılsın? Tətbiq yalnız baxış rejiminə keçəcək.')) return;
+    b.disabled = true;
+    var p = act === 'extend' ? rpc('admin_extend_trial', { p_workspace: b.getAttribute('data-ws'), p_days: 3 })
+      : act === 'revoke' ? rpc('admin_revoke_code', { p_code: b.getAttribute('data-code') })
+      : rpc('admin_set_license', { p_workspace: b.getAttribute('data-ws'), p_status: act });
+    p.then(function () { msg('ok', 'Yadda saxlanıldı.'); return refresh(); })
+     .catch(function (e) { msg('err', errText(e.message)); b.disabled = false; });
+  });
+
+  var lastCode = '';
+  function messages(code) {
+    var c = fmtCode(code);
+    return {
+      az: 'Salam! VIBE OS-u aldığınız üçün təşəkkür edirik.\nAktivasiya kodunuz: ' + c + '\n\nTətbiqdə: Digər → Lisenziya → kodu yazın → Aktivləşdir.\nKod birdəfəlikdir, tətbiq həmişəlik açılır.',
+      ru: 'Здравствуйте! Спасибо за покупку VIBE OS.\nВаш код активации: ' + c + '\n\nВ приложении: Ещё → Лицензия → введите код → Активировать.\nКод одноразовый, приложение активируется навсегда.',
+    };
+  }
+  $('create').onclick = function () {
+    var btn = this; btn.disabled = true; msg('err', '');
+    rpc('admin_create_code', { p_note: $('note').value.trim() }).then(function (code) {
+      lastCode = String(code);
+      $('newCode').textContent = fmtCode(lastCode);
+      $('msgAz').textContent = messages(lastCode).az;
+      $('codebox').style.display = 'block'; $('note').value = '';
+      return refresh();
+    }).catch(function (e) { msg('err', errText(e.message)); }).then(function () { btn.disabled = false; });
+  };
+  function copy(text) {
+    (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(function () { msg('ok', 'Kopyalandı.'); })
+      .catch(function () { prompt('Kopyalayın:', text); });
+  }
+  $('copyAz').onclick = function () { copy(messages(lastCode).az); };
+  $('copyRu').onclick = function () { copy(messages(lastCode).ru); };
+  $('copyCode').onclick = function () { copy(fmtCode(lastCode)); };
+  $('search').oninput = render;
+  function setTab(t) {
+    tab = t; show($('artists'), t === 'artists'); show($('codes'), t === 'codes');
+    $('tabArtists').setAttribute('aria-pressed', String(t === 'artists')); $('tabCodes').setAttribute('aria-pressed', String(t === 'codes'));
+  }
+  $('tabArtists').onclick = function () { setTab('artists'); };
+  $('tabCodes').onclick = function () { setTab('codes'); };
+
+  // ---------- boot ----------
+  if (!BASE || !CFG.anonKey) { msg('err', 'config.js doldurulmayıb: Supabase URL və anon açarını yazın.'); return; }
+  try { session = JSON.parse(sessionStorage.getItem('vibe-admin') || 'null'); } catch (e) {}
+  if (session) start().catch(function (e) { saveSession(null); msg('err', errText(e.message)); });
+})();
+</script>
+</body>
+</html>
