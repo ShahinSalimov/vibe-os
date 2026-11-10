@@ -6,11 +6,17 @@ export type RootStackParamList = {
   Tabs: undefined;
   EventForm: { id?: string } | undefined;
   RecordForm: { id?: string; kind?: TxKind } | undefined;
+  BookingDetail: { id: string };
+  BookingForm: { id?: string } | undefined;
+  Contacts: undefined;
+  ContactForm: { id?: string } | undefined;
+  Account: undefined;
 };
 
 export type TabParamList = {
   Home: undefined;
   Events: undefined;
+  Bookings: undefined;
   Money: undefined;
   More: undefined;
 };

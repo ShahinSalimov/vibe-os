@@ -17,9 +17,22 @@ Dillər: Azərbaycan, rus, ingilis.
 | Tətbiq kilidi (Face ID / barmaq izi / PIN) | hazır (yalnız real telefonda) |
 | Məlumatlar telefonda saxlanır, tətbiq bağlananda itmir | hazır |
 
+## Phase 2 — hazır olanlar
+
+| Hissə | Vəziyyət |
+|---|---|
+| Hesab: e-poçt kodu ilə giriş (şifrəsiz) | hazır, Supabase qoşulanda işləyir |
+| Bulud sinxronizasiyası (bir neçə telefon, oflayn işləyir, son dəyişiklik qalib gəlir) | hazır |
+| Server təhlükəsizliyi: hər müğənninin məlumatı ayrı (RLS), rollar, kart/IBAN qadağası | hazır, real PostgreSQL-də test olunub |
+| İctimai sifariş səhifəsi (`booking-page/`), 3 dil, limit: saatda 30 sorğu | hazır |
+| Sifarişlər bölməsi: status, zəng/WhatsApp, bir kliklə tədbirə çevirmək | hazır |
+| Kontaktlar (təşkilatçı sifariş təsdiqlənəndə avtomatik əlavə olunur) | hazır |
+
+Buludu qoşmaq üçün: [docs/SETUP_CLOUD.md](docs/SETUP_CLOUD.md)
+
 ## Növbəti mərhələlər
 
-Bulud (Supabase) və hesab sistemi, sifariş linki, müqavilələr, komanda və rollar, rider/setlist, AI və səslə daxiletmə.
+Müqavilələr, komanda və rollar (dəvət), rider/setlist, AI köməkçi.
 
 ## İşə salmaq
 
@@ -41,6 +54,10 @@ npm run typecheck
 
 ```bash
 npm test
+```
+
+```bash
+bash tests/db/run.sh
 ```
 
 ## Struktur

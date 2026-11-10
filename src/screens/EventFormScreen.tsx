@@ -8,7 +8,7 @@ import { Banner, Button, Card, Chips, Field, Screen, T, tap } from '../component
 import { confirmAction, notify } from '../lib/confirm';
 import { deriveStatus } from '../lib/finance';
 import { currencySymbol, formatMoney, isValidTime, parseAmount, toISODate } from '../lib/format';
-import { detectSensitiveIn } from '../lib/sensitive';
+import { detectSensitiveIn, validPhone } from '../lib/sensitive';
 import { CURRENCIES, EVENT_TYPES, type Currency, type EventType, type Language } from '../lib/types';
 import type { RootProps } from '../navigation/types';
 import { useAppStore } from '../store/useAppStore';
@@ -57,13 +57,14 @@ export default function EventFormScreen({ route, navigation }: RootProps<'EventF
     const next: Record<string, string> = {};
     if (!title.trim()) next.title = t('events.errors.title');
     if (!isValidTime(time.trim())) next.time = t('events.errors.time');
+    if (!validPhone(organizerPhone)) next.organizerPhone = t('events.errors.phone');
     if (fee && parseAmount(fee) === null) next.fee = t('money.errors.amount');
     if (advance && parseAmount(advance) === null) next.advance = t('money.errors.amount');
     if (advNum > feeNum && feeNum > 0) next.advance = t('events.errors.advance');
     setErrors(next);
     if (Object.keys(next).length) return;
 
-    const sensitive = detectSensitiveIn([title, venue, city, organizer, organizerPhone, notes]);
+    const sensitive = detectSensitiveIn([title, venue, city, organizer, notes]);
     if (sensitive) {
       notify(t('security.blockedTitle'), sensitive === 'card' ? t('security.blockedCard') : t('security.blockedIban'));
       return;
@@ -190,6 +191,7 @@ export default function EventFormScreen({ route, navigation }: RootProps<'EventF
           onChangeText={setOrganizerPhone}
           keyboardType="phone-pad"
           maxLength={20}
+          error={errors.organizerPhone}
         />
 
         <Card>

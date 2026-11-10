@@ -6,6 +6,11 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { IconName } from '../components/ui';
+import AccountScreen from '../screens/AccountScreen';
+import BookingDetailScreen from '../screens/BookingDetailScreen';
+import BookingFormScreen from '../screens/BookingFormScreen';
+import BookingsScreen from '../screens/BookingsScreen';
+import { ContactFormScreen, ContactsScreen } from '../screens/ContactsScreens';
 import EventFormScreen from '../screens/EventFormScreen';
 import EventsScreen from '../screens/EventsScreen';
 import HomeScreen from '../screens/HomeScreen';
@@ -36,6 +41,7 @@ const theme: Theme = {
 const TAB_ICONS: Record<keyof TabParamList, [IconName, IconName]> = {
   Home: ['home', 'home-outline'],
   Events: ['calendar', 'calendar-outline'],
+  Bookings: ['mail-unread', 'mail-unread-outline'],
   Money: ['wallet', 'wallet-outline'],
   More: ['grid', 'grid-outline'],
 };
@@ -43,6 +49,7 @@ const TAB_ICONS: Record<keyof TabParamList, [IconName, IconName]> = {
 function Tabs() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const newBookings = useAppStore((s) => s.bookings.filter((b) => b.status === 'new').length);
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -57,7 +64,8 @@ function Tabs() {
           paddingTop: 6,
           paddingBottom: Math.max(insets.bottom, 10),
         },
-        tabBarLabelStyle: { fontSize: 12, lineHeight: 16, fontWeight: '600' },
+        tabBarLabelStyle: { fontSize: 11, lineHeight: 16, fontWeight: '600' },
+        tabBarBadgeStyle: { backgroundColor: colors.gold, color: colors.onGold, fontWeight: '700' },
         tabBarIcon: ({ focused, color, size }) => (
           <Ionicons name={TAB_ICONS[route.name][focused ? 0 : 1]} size={size} color={color} />
         ),
@@ -65,6 +73,11 @@ function Tabs() {
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ title: t('tabs.home') }} />
       <Tab.Screen name="Events" component={EventsScreen} options={{ title: t('tabs.events') }} />
+      <Tab.Screen
+        name="Bookings"
+        component={BookingsScreen}
+        options={{ title: t('tabs.bookings'), tabBarBadge: newBookings || undefined }}
+      />
       <Tab.Screen name="Money" component={MoneyScreen} options={{ title: t('tabs.money') }} />
       <Tab.Screen name="More" component={MoreScreen} options={{ title: t('tabs.more') }} />
     </Tab.Navigator>
@@ -90,6 +103,11 @@ export default function RootNavigator() {
             <Stack.Screen name="Tabs" component={Tabs} options={{ headerShown: false }} />
             <Stack.Screen name="EventForm" component={EventFormScreen} options={{ presentation: 'modal' }} />
             <Stack.Screen name="RecordForm" component={RecordFormScreen} options={{ presentation: 'modal' }} />
+            <Stack.Screen name="BookingDetail" component={BookingDetailScreen} />
+            <Stack.Screen name="BookingForm" component={BookingFormScreen} options={{ presentation: 'modal' }} />
+            <Stack.Screen name="Contacts" component={ContactsScreen} />
+            <Stack.Screen name="ContactForm" component={ContactFormScreen} options={{ presentation: 'modal' }} />
+            <Stack.Screen name="Account" component={AccountScreen} />
           </>
         )}
       </Stack.Navigator>

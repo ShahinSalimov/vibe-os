@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="az">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0B0A10" />
+<meta name="robots" content="noindex" />
+<title>Booking · VIBE OS</title>
+<style>
+  :root {
+    --bg: #0B0A10; --surface: #15131D; --surface-alt: #1E1B29; --border: #2B2738;
+    --text: #F5F3FA; --muted: #A19CB0; --faint: #6E6980;
+    --gold: #F5B841; --gold-soft: rgba(245,184,65,.14); --on-gold: #1A1405;
+    --violet: #8B5CF6; --danger: #F87171; --success: #34D399;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  main { max-width: 520px; margin: 0 auto; padding: 20px 16px 48px; }
+  .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 800; letter-spacing: .5px; color: var(--muted); font-size: 13px; }
+  .dot { width: 22px; height: 22px; border-radius: 7px; background: var(--gold); }
+  .langs { display: flex; gap: 4px; background: var(--surface); padding: 4px; border-radius: 12px; border: 1px solid var(--border); }
+  .langs button { border: 0; background: none; color: var(--muted); font-weight: 700; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+  .langs button[aria-pressed="true"] { background: var(--surface-alt); color: var(--text); }
+  .hero { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 20px; display: flex; gap: 16px; align-items: center; }
+  .avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--gold); color: var(--on-gold); display: grid; place-items: center; font-size: 28px; font-weight: 800; flex: none; }
+  h1 { margin: 0; font-size: 26px; line-height: 1.15; letter-spacing: -.3px; }
+  .sub { color: var(--muted); font-size: 14px; margin-top: 4px; }
+  h2 { font-size: 20px; margin: 0 0 4px; }
+  .hint { color: var(--muted); font-size: 14px; margin: 0 0 16px; }
+  form { display: grid; gap: 14px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  label { display: grid; gap: 6px; font-size: 13px; color: var(--muted); }
+  input, select, textarea { width: 100%; min-height: 52px; background: var(--surface-alt); color: var(--text);
+    border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; font: inherit; }
+  textarea { min-height: 96px; resize: vertical; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--gold); outline-offset: 1px; border-color: transparent; }
+  input[aria-invalid="true"] { border-color: var(--danger); }
+  .types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .types button { min-height: 52px; border-radius: 14px; border: 1px solid var(--border); background: var(--surface);
+    color: var(--text); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; padding: 6px; }
+  .types button[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); color: var(--on-gold); }
+  .budget { display: grid; grid-template-columns: 1fr 110px; gap: 8px; }
+  .submit { min-height: 56px; border: 0; border-radius: 14px; background: var(--gold); color: var(--on-gold);
+    font: inherit; font-weight: 800; font-size: 17px; cursor: pointer; margin-top: 4px; }
+  .submit[disabled] { opacity: .6; cursor: wait; }
+  .error { background: rgba(248,113,113,.14); color: var(--text); border-radius: 14px; padding: 12px 14px; font-size: 14px; }
+  .field-error { color: var(--danger); font-size: 13px; }
+  .privacy { color: var(--faint); font-size: 12px; text-align: center; margin-top: 8px; }
+  .done { text-align: center; padding: 40px 12px; display: grid; gap: 10px; justify-items: center; }
+  .check { width: 72px; height: 72px; border-radius: 50%; background: rgba(52,211,153,.14); color: var(--success); display: grid; place-items: center; font-size: 36px; }
+  .hidden { display: none !important; }
+  .legend { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <div class="brand"><span class="dot" aria-hidden="true"></span>VIBE OS</div>
+    <div class="langs" role="group" aria-label="Language">
+      <button type="button" data-lang="az">AZ</button>
+      <button type="button" data-lang="ru">RU</button>
+      <button type="button" data-lang="en">EN</button>
+    </div>
+  </div>
+
+  <section id="loading" class="hint" data-i18n="loading"></section>
+  <section id="notfound" class="hidden done"><h2 data-i18n="notFound"></h2><p class="hint" data-i18n="notFoundBody"></p></section>
+
+  <section id="page" class="hidden">
+    <div class="hero">
+      <div class="avatar" id="avatar" aria-hidden="true"></div>
+      <div><h1 id="artist"></h1><div class="sub" id="artistSub"></div></div>
+    </div>
+
+    <h2 data-i18n="title"></h2>
+    <p class="hint" data-i18n="hint"></p>
+
+    <form id="form" novalidate>
+      <label><span data-i18n="name"></span><input name="name" maxlength="100" autocomplete="name" required /></label>
+      <div class="row">
+        <label><span data-i18n="phone"></span><input name="phone" type="tel" maxlength="20" autocomplete="tel" inputmode="tel" /></label>
+        <label><span data-i18n="email"></span><input name="email" type="email" maxlength="120" autocomplete="email" /></label>
+      </div>
+      <div>
+        <div class="legend" data-i18n="type"></div>
+        <div class="types" id="types" role="radiogroup"></div>
+      </div>
+      <div class="row">
+        <label><span data-i18n="date"></span><input name="date" type="date" required /></label>
+        <label><span data-i18n="guests"></span><input name="guests" type="number" min="1" max="100000" inputmode="numeric" /></label>
+      </div>
+      <div class="row">
+        <label><span data-i18n="city"></span><input name="city" maxlength="60" /></label>
+        <label><span data-i18n="venue"></span><input name="venue" maxlength="100" /></label>
+      </div>
+      <label><span data-i18n="budget"></span>
+        <div class="budget">
+          <input name="budget" inputmode="decimal" maxlength="14" />
+          <select name="currency" aria-label="Currency">
+            <option>AZN</option><option>USD</option><option>EUR</option><option>RUB</option><option>TRY</option>
+          </select>
+        </div>
+      </label>
+      <label><span data-i18n="message"></span><textarea name="message" maxlength="1000"></textarea></label>
+      <div id="formError" class="error hidden" role="alert"></div>
+      <button class="submit" id="submit" type="submit" data-i18n="send"></button>
+      <p class="privacy" data-i18n="privacy"></p>
+    </form>
+  </section>
+
+  <section id="done" class="hidden done">
+    <div class="check" aria-hidden="true">&#10003;</div>
+    <h2 data-i18n="sent"></h2>
+    <p class="hint" id="sentBody"></p>
+  </section>
+</main>
+
+<script src="config.js"></script>
+<script>
+(function () {
+  'use strict';
+  var CFG = window.VIBE_CONFIG || {};
+  var I18N = {
+    az: {
+      loading: 'Yüklənir…', notFound: 'Səhifə tapılmadı', notFoundBody: 'Link səhvdir və ya sənətçi sifariş qəbul etmir.',
+      title: 'Çıxış sifarişi', hint: 'Formu doldurun, sənətçi və ya meneceri sizinlə əlaqə saxlayacaq.',
+      name: 'Adınız', phone: 'Telefon', email: 'E-poçt', type: 'Tədbirin növü', date: 'Tarix', guests: 'Qonaq sayı',
+      city: 'Şəhər', venue: 'Məkan', budget: 'Büdcə (istəyə bağlı)', message: 'Əlavə məlumat', send: 'Sorğunu göndər',
+      sending: 'Göndərilir…', sent: 'Sorğu göndərildi', sentBody: '{name} sorğunuzu aldı və tezliklə sizinlə əlaqə saxlayacaq.',
+      privacy: 'Kart və ya bank məlumatı tələb olunmur. Ödənişlər bu səhifədə aparılmır.',
+      e_name: 'Adınızı yazın', e_contact: 'Telefon və ya e-poçt yazın', e_phone: 'Telefon nömrəsini yoxlayın', e_email: 'E-poçtu yoxlayın',
+      e_date: 'Gələcək tarix seçin', e_budget: 'Büdcəni rəqəmlə yazın', e_card: 'Kart və ya bank nömrəsi yazmayın.',
+      e_rate: 'Çox sorğu göndərilib. Bir az sonra yenidən cəhd edin.', e_network: 'Bağlantı xətası. Yenidən cəhd edin.', e_generic: 'Xəta baş verdi. Yenidən cəhd edin.',
+      roles: { singer: 'Müğənni', musician: 'Musiqiçi', dj: 'DJ', producer: 'Prodüser', band: 'Qrup', manager: 'Menecer' },
+      types: { wedding: 'Toy', concert: 'Konsert', corporate: 'Korporativ', restaurant: 'Restoran / Klub', private: 'Özəl məclis', tv: 'TV / Radio', festival: 'Festival' }
+    },
+    ru: {
+      loading: 'Загрузка…', notFound: 'Страница не найдена', notFoundBody: 'Ссылка неверна или артист не принимает заказы.',
+      title: 'Заказ выступления', hint: 'Заполните форму — артист или менеджер свяжется с вами.',
+      name: 'Ваше имя', phone: 'Телефон', email: 'Email', type: 'Тип мероприятия', date: 'Дата', guests: 'Гостей',
+      city: 'Город', venue: 'Площадка', budget: 'Бюджет (необязательно)', message: 'Подробности', send: 'Отправить заявку',
+      sending: 'Отправка…', sent: 'Заявка отправлена', sentBody: '{name} получил(а) вашу заявку и скоро свяжется с вами.',
+      privacy: 'Данные карт и счетов не нужны. Оплата на этой странице не проводится.',
+      e_name: 'Введите имя', e_contact: 'Укажите телефон или email', e_phone: 'Проверьте номер телефона', e_email: 'Проверьте email',
+      e_date: 'Выберите будущую дату', e_budget: 'Укажите бюджет числом', e_card: 'Не указывайте номер карты или счёта.',
+      e_rate: 'Слишком много заявок. Попробуйте позже.', e_network: 'Ошибка соединения. Попробуйте ещё раз.', e_generic: 'Произошла ошибка. Попробуйте ещё раз.',
+      roles: { singer: 'Певец / певица', musician: 'Музыкант', dj: 'DJ', producer: 'Продюсер', band: 'Группа', manager: 'Менеджер' },
+      types: { wedding: 'Свадьба', concert: 'Концерт', corporate: 'Корпоратив', restaurant: 'Ресторан / Клуб', private: 'Частное', tv: 'ТВ / Радио', festival: 'Фестиваль' }
+    },
+    en: {
+      loading: 'Loading…', notFound: 'Page not found', notFoundBody: 'The link is wrong or the artist is not taking bookings.',
+      title: 'Book a performance', hint: 'Fill in the form and the artist or their manager will contact you.',
+      name: 'Your name', phone: 'Phone', email: 'Email', type: 'Event type', date: 'Date', guests: 'Guests',
+      city: 'City', venue: 'Venue', budget: 'Budget (optional)', message: 'Details', send: 'Send request',
+      sending: 'Sending…', sent: 'Request sent', sentBody: '{name} has received your request and will contact you soon.',
+      privacy: 'No card or bank details needed. No payments are made on this page.',
+      e_name: 'Enter your name', e_contact: 'Enter a phone number or email', e_phone: 'Check the phone number', e_email: 'Check the email',
+      e_date: 'Choose a future date', e_budget: 'Enter the budget as a number', e_card: 'Do not enter card or bank numbers.',
+      e_rate: 'Too many requests. Please try again later.', e_network: 'Connection error. Please try again.', e_generic: 'Something went wrong. Please try again.',
+      roles: { singer: 'Singer', musician: 'Musician', dj: 'DJ', producer: 'Producer', band: 'Band', manager: 'Manager' },
+      types: { wedding: 'Wedding', concert: 'Concert', corporate: 'Corporate', restaurant: 'Restaurant / Club', private: 'Private party', tv: 'TV / Radio', festival: 'Festival' }
+    }
+  };
+  var TYPES = ['wedding', 'concert', 'corporate', 'restaurant', 'private', 'tv', 'festival'];
+
+  var params = new URLSearchParams(location.search);
+  var slug = (params.get('a') || '').toLowerCase();
+  var lang = params.get('lang');
+  if (!I18N[lang]) {
+    var nav = (navigator.language || 'az').slice(0, 2);
+    lang = I18N[nav] ? nav : 'az';
+  }
+  var artist = null;
+  var selectedType = 'wedding';
+  var $ = function (id) { return document.getElementById(id); };
+  var form = $('form');
+
+  function t(k) { return I18N[lang][k] || I18N.en[k] || k; }
+
+  function render() {
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(function (el) { el.textContent = t(el.getAttribute('data-i18n')); });
+    document.querySelectorAll('.langs button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.lang === lang)); });
+    var types = $('types');
+    types.innerHTML = '';
+    TYPES.forEach(function (ty) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('role', 'radio');
+      b.setAttribute('aria-pressed', String(ty === selectedType));
+      b.setAttribute('aria-checked', String(ty === selectedType));
+      b.textContent = I18N[lang].types[ty];
+      b.onclick = function () { selectedType = ty; render(); };
+      types.appendChild(b);
+    });
+    if (artist) {
+      $('artist').textContent = artist.stage_name;
+      $('avatar').textContent = artist.stage_name.charAt(0).toUpperCase();
+      var role = I18N[lang].roles[artist.artist_role] || '';
+      $('artistSub').textContent = [role, artist.genre].filter(Boolean).join(' · ');
+      $('sentBody').textContent = t('sentBody').replace('{name}', artist.stage_name);
+      document.title = artist.stage_name + ' · ' + t('title');
+    }
+  }
+
+  document.querySelectorAll('.langs button').forEach(function (b) {
+    b.onclick = function () { lang = b.dataset.lang; render(); };
+  });
+
+  // ---- payment-data guard (mirrors the app and the database) ----
+  function luhn(d) { var s = 0, dbl = false; for (var i = d.length - 1; i >= 0; i--) { var n = +d[i]; if (dbl) { n *= 2; if (n > 9) n -= 9; } s += n; dbl = !dbl; } return s % 10 === 0; }
+  function ibanOk(raw) {
+    var x = raw.replace(/\s+/g, '').toUpperCase();
+    if (!/^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/.test(x)) return false;
+    var r = x.slice(4) + x.slice(0, 4), rem = 0;
+    for (var i = 0; i < r.length; i++) { var c = r.charCodeAt(i), v = c >= 65 ? String(c - 55) : r[i];
+      for (var j = 0; j < v.length; j++) rem = (rem * 10 + (+v[j])) % 97; }
+    return rem === 1;
+  }
+  function hasPaymentData(text) {
+    if (!text) return false;
+    var cards = text.match(/\d(?:[ -]?\d){12,18}/g) || [];
+    for (var i = 0; i < cards.length; i++) if (luhn(cards[i].replace(/[ -]/g, ''))) return true;
+    var ibans = text.toUpperCase().match(/[A-Z]{2}\d{2}(?:\s?[A-Z0-9]){11,30}/g) || [];
+    for (var k = 0; k < ibans.length; k++) if (ibanOk(ibans[k])) return true;
+    return false;
+  }
+  function validPhone(p) {
+    p = p.trim(); if (!p) return true;
+    if (!/^[+0-9 ()-]{3,20}$/.test(p)) return false;
+    var n = p.replace(/\D/g, '').length; return n >= 5 && n <= 15;
+  }
+  function today() { var d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); }
+
+  function rpc(name, body) {
+    return fetch(CFG.supabaseUrl.replace(/\/$/, '') + '/rest/v1/rpc/' + name, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: CFG.anonKey, Authorization: 'Bearer ' + CFG.anonKey },
+      body: JSON.stringify(body)
+    }).then(function (r) {
+      return r.json().catch(function () { return null; }).then(function (data) {
+        if (!r.ok) { var e = new Error((data && data.message) || ('HTTP ' + r.status)); e.server = true; throw e; }
+        return data;
+      });
+    });
+  }
+
+  function showError(msg) { var el = $('formError'); el.textContent = msg; el.classList.toggle('hidden', !msg); }
+  function mark(name, bad) { var el = form.elements[name]; if (el) el.setAttribute('aria-invalid', String(!!bad)); }
+
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var f = form.elements;
+    var v = {
+      name: f.name.value.trim(), phone: f.phone.value.trim(), email: f.email.value.trim(), date: f.date.value,
+      guests: f.guests.value ? parseInt(f.guests.value, 10) : null, city: f.city.value.trim(), venue: f.venue.value.trim(),
+      budget: f.budget.value.replace(/[\s,]/g, '').trim(), currency: f.currency.value, message: f.message.value.trim()
+    };
+    ['name', 'phone', 'email', 'date', 'budget'].forEach(function (n) { mark(n, false); });
+    var err = null;
+    if (!v.name) { err = t('e_name'); mark('name', true); }
+    else if (!v.phone && !v.email) { err = t('e_contact'); mark('phone', true); }
+    else if (!validPhone(v.phone)) { err = t('e_phone'); mark('phone', true); }
+    else if (v.email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.email)) { err = t('e_email'); mark('email', true); }
+    else if (!v.date || v.date < today()) { err = t('e_date'); mark('date', true); }
+    else if (v.budget && !/^\d+(\.\d{1,2})?$/.test(v.budget)) { err = t('e_budget'); mark('budget', true); }
+    else if ([v.name, v.email, v.city, v.venue, v.message].some(hasPaymentData)) { err = t('e_card'); }
+    showError(err);
+    if (err) return;
+
+    var btn = $('submit');
+    btn.disabled = true; btn.textContent = t('sending');
+    rpc('submit_booking', {
+      p_slug: slug, p_organizer_name: v.name, p_phone: v.phone, p_email: v.email, p_event_type: selectedType,
+      p_date: v.date, p_city: v.city, p_venue: v.venue, p_guests: v.guests, p_budget: v.budget ? Number(v.budget) : null,
+      p_currency: v.currency, p_message: v.message, p_language: lang
+    }).then(function () {
+      $('page').classList.add('hidden'); $('done').classList.remove('hidden'); window.scrollTo(0, 0);
+    }).catch(function (e) {
+      var m = String(e.message || '');
+      showError(!e.server ? t('e_network') : m.indexOf('rate_limited') >= 0 ? t('e_rate')
+        : m.indexOf('payment_data') >= 0 ? t('e_card') : m.indexOf('date_in_past') >= 0 ? t('e_date')
+        : m.indexOf('contact_required') >= 0 ? t('e_contact') : t('e_generic'));
+    }).then(function () { btn.disabled = false; btn.textContent = t('send'); });
+  });
+
+  render();
+  form.elements.date.min = today();
+  if (!slug || !CFG.supabaseUrl || !CFG.anonKey) {
+    $('loading').classList.add('hidden'); $('notfound').classList.remove('hidden');
+    return;
+  }
+  rpc('get_public_profile', { p_slug: slug }).then(function (rows) {
+    $('loading').classList.add('hidden');
+    if (!rows || !rows.length) { $('notfound').classList.remove('hidden'); return; }
+    artist = rows[0];
+    form.elements.currency.value = artist.default_currency || 'AZN';
+    $('page').classList.remove('hidden');
+    render();
+  }).catch(function () {
+    $('loading').textContent = t('e_network');
+  });
+})();
+</script>
+</body>
+</html>

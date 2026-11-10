@@ -1,7 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import * as LocalAuthentication from 'expo-local-authentication';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
+import { Pressable } from 'react-native';
+import type { RootStackParamList } from '../navigation/types';
 import { Platform, StyleSheet, Switch, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, Chips, Screen, SectionHeader, T, type IconName } from '../components/ui';
@@ -12,7 +16,6 @@ import { useAppStore } from '../store/useAppStore';
 import { colors, space } from '../theme/tokens';
 
 const NEXT_MODULES: { key: string; icon: IconName }[] = [
-  { key: 'moduleBooking', icon: 'link' },
   { key: 'moduleContracts', icon: 'document-text' },
   { key: 'moduleTeam', icon: 'people' },
   { key: 'moduleRider', icon: 'list' },
@@ -25,6 +28,9 @@ export default function MoreScreen() {
   const settings = useAppStore((s) => s.settings);
   const updateSettings = useAppStore((s) => s.updateSettings);
   const resetAll = useAppStore((s) => s.resetAll);
+  const cloudEmail = useAppStore((s) => s.cloud.email);
+  const contactsCount = useAppStore((s) => s.contacts.length);
+  const nav = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const setLanguage = (l: Language) => {
     updateSettings({ language: l });
@@ -71,6 +77,17 @@ export default function MoreScreen() {
             {[profile ? t(`roles.${profile.role}`) : '', profile?.genre].filter(Boolean).join(' · ')}
           </T>
         </View>
+      </Card>
+
+      <Card style={{ gap: 0, paddingVertical: space.xs }}>
+        <NavRow
+          icon={cloudEmail ? 'cloud-done' : 'cloud-upload'}
+          iconColor={cloudEmail ? colors.success : colors.gold}
+          label={t('more.account')}
+          value={cloudEmail ?? ''}
+          onPress={() => nav.navigate('Account')}
+        />
+        <NavRow icon="people" label={t('more.contacts')} value={contactsCount ? String(contactsCount) : ''} onPress={() => nav.navigate('Contacts')} />
       </Card>
 
       <SectionHeader title={t('more.language')} />
@@ -136,7 +153,35 @@ export default function MoreScreen() {
   );
 }
 
+function NavRow({
+  icon,
+  label,
+  value,
+  onPress,
+  iconColor = colors.violet,
+}: {
+  icon: IconName;
+  label: string;
+  value: string;
+  onPress: () => void;
+  iconColor?: string;
+}) {
+  return (
+    <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.navRow, pressed && { opacity: 0.7 }]}>
+      <Ionicons name={icon} size={22} color={iconColor} />
+      <T variant="bodyLg" style={{ flex: 1 }}>
+        {label}
+      </T>
+      <T variant="caption" numberOfLines={1} style={{ maxWidth: 160 }}>
+        {value}
+      </T>
+      <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
+  navRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, minHeight: 56 },
   profile: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   avatar: {
     width: 56,

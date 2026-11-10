@@ -60,15 +60,17 @@ export function T({
   color,
   style,
   numberOfLines,
+  selectable,
 }: {
   children: React.ReactNode;
+  selectable?: boolean;
   variant?: 'display' | 'h1' | 'title' | 'bodyLg' | 'body' | 'caption' | 'label';
   color?: string;
   style?: StyleProp<TextStyle>;
   numberOfLines?: number;
 }) {
   return (
-    <Text numberOfLines={numberOfLines} style={[textStyles[variant], color ? { color } : null, style]}>
+    <Text numberOfLines={numberOfLines} selectable={selectable} style={[textStyles[variant], color ? { color } : null, style]}>
       {children}
     </Text>
   );

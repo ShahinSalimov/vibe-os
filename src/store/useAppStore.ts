@@ -208,7 +208,11 @@ export const useAppStore = create<AppState>()(
               return { contacts: mergeRemote(s.contacts, rows, mappers.contacts.fromRow) };
           }
         }),
-      clearTombstones: (upTo) => set((s) => ({ tombstones: s.tombstones.filter((t) => t.deletedAt > upTo) })),
+      clearTombstones: (upTo) =>
+        set((s) => {
+          const left = s.tombstones.filter((t) => t.deletedAt > upTo);
+          return left.length === s.tombstones.length ? {} : { tombstones: left };
+        }),
 
       resetAll: () =>
         set({

@@ -86,7 +86,7 @@ export const mappers = {
       status: r.status as MoneyRecord['status'],
       category: String(r.category ?? ''),
       note: String(r.note ?? ''),
-      eventId: r.event_id ? String(r.event_id) : undefined,
+      ...(r.event_id ? { eventId: String(r.event_id) } : {}),
       createdAt: String(r.created_at),
       updatedAt: String(r.updated_at),
     }),
@@ -130,7 +130,7 @@ export const mappers = {
       message: String(r.message ?? ''),
       language: (r.language as BookingRequest['language']) ?? 'az',
       status: r.status as BookingRequest['status'],
-      eventId: r.event_id ? String(r.event_id) : undefined,
+      ...(r.event_id ? { eventId: String(r.event_id) } : {}),
       createdAt: String(r.created_at),
       updatedAt: String(r.updated_at),
     }),
@@ -171,17 +171,25 @@ const ts = (s: string | null | undefined) => (s ? Date.parse(s) : 0);
  */
 export function mergeRemote<T extends Synced>(local: T[], rows: Row[], fromRow: (r: Row) => T): T[] {
   const byId = new Map(local.map((x) => [x.id, x]));
+  let changed = false;
   for (const row of rows) {
     const id = String(row.id);
     const mine = byId.get(id);
     const remoteUpdated = ts(row.updated_at as string);
     if (row.deleted_at) {
-      if (!mine || ts(mine.updatedAt) <= remoteUpdated) byId.delete(id);
+      if (mine && ts(mine.updatedAt) <= remoteUpdated) {
+        byId.delete(id);
+        changed = true;
+      }
       continue;
     }
-    if (!mine || remoteUpdated > ts(mine.updatedAt)) byId.set(id, fromRow(row));
+    if (!mine || remoteUpdated > ts(mine.updatedAt)) {
+      byId.set(id, fromRow(row));
+      changed = true;
+    }
   }
-  return [...byId.values()];
+  // Same reference when nothing changed: avoids re-render and sync loops.
+  return changed ? [...byId.values()] : local;
 }
 
 /** Items changed locally since the last successful push. */

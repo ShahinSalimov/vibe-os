@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, AppState, Platform, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import i18n from './src/i18n';
+import { useAutoSync } from './src/cloud/useAutoSync';
 import RootNavigator from './src/navigation/RootNavigator';
 import LockScreen from './src/screens/LockScreen';
 import { useAppStore } from './src/store/useAppStore';
@@ -15,6 +16,7 @@ export default function App() {
   const language = useAppStore((s) => s.settings.language);
   const appLock = useAppStore((s) => s.settings.appLock);
   const [locked, setLocked] = useState(true);
+  useAutoSync();
   const appState = useRef(AppState.currentState);
 
   // Saved language wins over device language once the user has onboarded.

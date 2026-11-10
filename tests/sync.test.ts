@@ -1,0 +1,135 @@
+/// <reference types="node" />
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { changedSince, mappers, mergeRemote, nextCursor, pullFrom, slugify, tombstoneRows } from '../src/lib/sync';
+import { validPhone } from '../src/lib/sensitive';
+import { migrateStore } from '../src/store/migrate';
+import type { ArtistEvent, BookingRequest } from '../src/lib/types';
+
+const ev = (p: Partial<ArtistEvent>): ArtistEvent => ({
+  id: 'evt-000000001',
+  title: 'Toy',
+  type: 'wedding',
+  date: '2026-12-15',
+  time: '19:30',
+  venue: 'Fairmont',
+  city: 'Bakı',
+  organizer: 'Rauf',
+  organizerPhone: '+994 50 123 45 67',
+  fee: 3000,
+  advance: 1000,
+  currency: 'AZN',
+  notes: '',
+  createdAt: '2026-11-01T10:00:00.000Z',
+  updatedAt: '2026-11-01T10:00:00.000Z',
+  ...p,
+});
+
+test('event row mapping round-trips', () => {
+  const e = ev({});
+  const row = mappers.events.toRow(e, 'ws-1');
+  assert.equal(row.workspace_id, 'ws-1');
+  assert.equal(row.organizer_phone, e.organizerPhone);
+  assert.equal(row.deleted_at, null);
+  assert.deepEqual(mappers.events.fromRow({ ...row, fee: '3000.00', advance: '1000.00' }), e);
+});
+
+test('booking mapping keeps nulls for guests/budget', () => {
+  const b: BookingRequest = {
+    id: 'bk-000000001', source: 'link', organizerName: 'Elvin', phone: '', email: 'e@x.az',
+    eventType: 'corporate', date: '2027-01-10', city: '', venue: '', guests: null, budget: null,
+    currency: 'USD', message: '', language: 'ru', status: 'new',
+    createdAt: '2026-11-01T10:00:00.000Z', updatedAt: '2026-11-01T10:00:00.000Z',
+  };
+  assert.deepEqual(mappers.booking_requests.fromRow(mappers.booking_requests.toRow(b, 'w')), b);
+});
+
+test('merge: newer remote wins, older remote ignored, new rows added', () => {
+  const local = [ev({ id: 'a-00000001', title: 'local', updatedAt: '2026-11-02T00:00:00Z' }), ev({ id: 'b-00000001', title: 'local-b', updatedAt: '2026-11-05T00:00:00Z' })];
+  const rows = [
+    mappers.events.toRow(ev({ id: 'a-00000001', title: 'remote-newer', updatedAt: '2026-11-03T00:00:00Z' }), 'w'),
+    mappers.events.toRow(ev({ id: 'b-00000001', title: 'remote-older', updatedAt: '2026-11-04T00:00:00Z' }), 'w'),
+    mappers.events.toRow(ev({ id: 'c-00000001', title: 'remote-new' }), 'w'),
+  ];
+  const out = mergeRemote(local, rows, mappers.events.fromRow);
+  const byId = Object.fromEntries(out.map((e) => [e.id, e.title]));
+  assert.deepEqual(byId, { 'a-00000001': 'remote-newer', 'b-00000001': 'local-b', 'c-00000001': 'remote-new' });
+});
+
+test('merge: remote delete removes local unless local is newer', () => {
+  const local = [ev({ id: 'a-00000001', updatedAt: '2026-11-01T00:00:00Z' }), ev({ id: 'b-00000001', updatedAt: '2026-11-09T00:00:00Z' })];
+  const rows = [
+    { id: 'a-00000001', updated_at: '2026-11-02T00:00:00Z', deleted_at: '2026-11-02T00:00:00Z' },
+    { id: 'b-00000001', updated_at: '2026-11-02T00:00:00Z', deleted_at: '2026-11-02T00:00:00Z' },
+  ];
+  assert.deepEqual(mergeRemote(local, rows, mappers.events.fromRow).map((e) => e.id), ['b-00000001']);
+});
+
+test('changedSince, tombstones, cursors', () => {
+  const items = [ev({ id: 'old-0000001', updatedAt: '2026-11-01T00:00:00Z' }), ev({ id: 'new-0000001', updatedAt: '2026-11-05T00:00:00Z' })];
+  assert.equal(changedSince(items, null).length, 2);
+  assert.deepEqual(changedSince(items, '2026-11-02T00:00:00Z').map((e) => e.id), ['new-0000001']);
+  const rows = tombstoneRows(
+    [{ table: 'events', id: 'x-00000001', deletedAt: '2026-11-03T00:00:00Z' }, { table: 'contacts', id: 'y-00000001', deletedAt: '2026-11-03T00:00:00Z' }],
+    'events', 'w',
+  );
+  assert.deepEqual(rows, [{ id: 'x-00000001', workspace_id: 'w', updated_at: '2026-11-03T00:00:00Z', deleted_at: '2026-11-03T00:00:00Z' }]);
+  assert.equal(nextCursor([{ synced_at: '2026-11-03T00:00:00Z' }, { synced_at: '2026-11-04T00:00:00Z' }], null), '2026-11-04T00:00:00Z');
+  assert.equal(nextCursor([], '2026-11-01T00:00:00Z'), '2026-11-01T00:00:00Z');
+  assert.equal(pullFrom('2026-11-04T00:01:00.000Z'), '2026-11-04T00:00:00.000Z');
+  assert.equal(pullFrom(null), null);
+});
+
+test('slugify handles Azerbaijani, Russian and short names', () => {
+  assert.equal(slugify('Aysel Məmmədova'), 'aysel-memmedova');
+  assert.equal(slugify('Айсель'), 'aysel');
+  assert.equal(slugify('Şəbnəm Tovuzlu'), 'shebnem-tovuzlu');
+  assert.equal(slugify('DJ'), 'artist-dj');
+  assert.equal(slugify('!!!'), 'artist-vibe');
+  for (const s of ['Aysel Məmmədova', 'Айсель', 'DJ', 'A very very long stage name that keeps going on']) {
+    assert.match(slugify(s), /^[a-z0-9][a-z0-9-]{2,39}$/);
+  }
+});
+
+test('validPhone mirrors the server rule', () => {
+  for (const p of ['', '+994 50 123 45 67', '+7 (912) 345-67-89', '0501234567']) assert.equal(validPhone(p), true, p);
+  for (const p of ['4111 1111 1111 1111', 'abc', '123', '+1234567890123456']) assert.equal(validPhone(p), false, p);
+});
+
+test('store migration v1 -> v2 keeps Phase 1 data', () => {
+  const v1 = {
+    profile: { stageName: 'Aysel' },
+    events: [{ id: 'e1', createdAt: '2026-11-01T00:00:00Z' }],
+    records: [{ id: 'r1', createdAt: '2026-11-02T00:00:00Z' }],
+  };
+  const v2 = migrateStore(v1, 1) as any;
+  assert.equal(v2.profile.stageName, 'Aysel');
+  assert.equal(v2.events[0].updatedAt, '2026-11-01T00:00:00Z');
+  assert.equal(v2.records[0].updatedAt, '2026-11-02T00:00:00Z');
+  assert.deepEqual(v2.bookings, []);
+  assert.deepEqual(v2.contacts, []);
+  assert.deepEqual(v2.tombstones, []);
+  assert.equal(v2.cloud.workspaceId, null);
+  assert.equal(migrateStore(v2, 2), v2);
+});
+
+import { internationalDigits, mailtoUrl, telUrl, whatsappUrl } from '../src/lib/contactLinks';
+test('phone links: local AZ/RU formats become international', () => {
+  assert.equal(internationalDigits('050 123 45 67'), '994501234567');
+  assert.equal(internationalDigits('+994 (50) 123-45-67'), '994501234567');
+  assert.equal(internationalDigits('8 912 345 67 89'), '79123456789');
+  assert.equal(internationalDigits('00994501234567'), '994501234567');
+  assert.equal(internationalDigits('123'), null);
+  assert.equal(telUrl('050 123 45 67'), 'tel:+994501234567');
+  assert.equal(whatsappUrl('+7 912 345 67 89', 'Salam'), 'https://wa.me/79123456789?text=Salam');
+  assert.equal(mailtoUrl('a@b.az'), 'mailto:a@b.az');
+  assert.equal(mailtoUrl('nope'), null);
+});
+
+test('merge returns the same array when nothing changed (no sync loop)', () => {
+  const local = [ev({ id: 'a-00000001', updatedAt: '2026-11-05T00:00:00.000Z' })];
+  const sameRow = mappers.events.toRow(local[0], 'w');
+  assert.equal(mergeRemote(local, [sameRow], mappers.events.fromRow), local);
+  assert.equal(mergeRemote(local, [], mappers.events.fromRow), local);
+  assert.notEqual(mergeRemote(local, [{ ...sameRow, updated_at: '2026-11-06T00:00:00.000Z' }], mappers.events.fromRow), local);
+});
