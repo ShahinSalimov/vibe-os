@@ -3,7 +3,8 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { T, tap } from '../components/ui';
-import { confirmAction } from '../lib/confirm';
+import { DEMO_ONLY, SELLER_CONTACT_URL } from '../cloud/config';
+import { confirmAction, notify } from '../lib/confirm';
 import { useAppStore } from '../store/useAppStore';
 import { colors, radius, space, themed } from '../theme/tokens';
 
@@ -16,6 +17,11 @@ export function DemoBanner() {
   const updateSettings = useAppStore((s) => s.updateSettings);
   if (!demo) return null;
   const exit = async () => {
+    if (DEMO_ONLY) {
+      const contact = SELLER_CONTACT_URL.replace(/^https?:\/\//, '');
+      notify(t('demo.fullTitle'), contact ? `${t('demo.fullBody')}\n\n${t('demo.contactLabel', { contact })}` : t('demo.fullBody'));
+      return;
+    }
     const ok = await confirmAction({
       title: t('demo.exitTitle'),
       message: t('demo.exitBody'),

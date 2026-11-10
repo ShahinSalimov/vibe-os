@@ -1,0 +1,21 @@
+const { chromium } = require('playwright');
+(async () => {
+  const b = await chromium.launch();
+  const p = await (await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, locale: 'az-AZ' })).newPage();
+  const errors = [], failed = [];
+  p.on('pageerror', e => errors.push(e.message)); p.on('requestfailed', r => failed.push(r.url()));
+  await p.goto('http://localhost:8095/artifact/index.html'); await p.waitForTimeout(2500);
+  let body = await p.locator('body').innerText();
+  console.log('welcome: real setup hidden:', !body.includes('Davam'), '| demo button:', body.includes('Demonu aç'));
+  await p.screenshot({ path: process.argv[2] + '/do1-welcome.png' });
+  await p.getByText('Demonu aç', { exact: true }).click(); await p.waitForTimeout(1500);
+  await p.getByLabel('Öz məlumatlarımla başla').first().click(); await p.waitForTimeout(500);
+  body = await p.locator('body').innerText();
+  console.log('full-version dialog:', body.includes('Tam versiya') && body.includes('ilk 3 gün pulsuzdur'));
+  await p.screenshot({ path: process.argv[2] + '/do2-dialog.png' });
+  await p.getByRole('button', { name: 'OK' }).last().click(); await p.waitForTimeout(300);
+  const st = await p.evaluate(() => JSON.parse(localStorage.getItem('vibe-os-store')).state);
+  console.log('demo still there after dialog:', st.settings.demo === true && st.events.length > 0);
+  console.log('failed:', JSON.stringify(failed), '| errors:', JSON.stringify(errors));
+  await b.close();
+})();

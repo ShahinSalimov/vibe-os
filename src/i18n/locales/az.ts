@@ -293,6 +293,8 @@ const az: Dictionary = {
     errors: { name: 'Ad yazın' },
   },
   account: {
+    nudgeTitle: 'Məlumatlarınızı qoruyun: hesaba daxil olun',
+    nudgeBody: 'Qeydləriniz buludda qorunur və satıcı VIBE OS-u sizin üçün aktivləşdirə bilir.',
     title: 'Hesab',
     signedOutTitle: 'Məlumatlarınızı qoruyun',
     signedOutBody: 'E-poçtla daxil olun: məlumatlarınız buludda qorunsun, bir neçə telefonda istifadə edin və sifariş linkinizi alın.',
@@ -660,6 +662,9 @@ const az: Dictionary = {
     tomorrow: 'Sabah',
   },
   demo: {
+    fullTitle: 'Tam versiya',
+    fullBody: 'Bu, demodur. VIBE OS-dan öz tədbirləriniz, maliyyə qeydləriniz və komandanızla istifadə etmək üçün tətbiqi satıcıdan alın: ilk 3 gün pulsuzdur.',
+    contactLabel: 'Əlaqə: {{contact}}',
     open: 'Demonu aç',
     openHint: 'Toylar, konsertlər, maliyyə və mahnılarla tam nümunə. Heç nə heç yerə göndərilmir.',
     banner: 'Demo rejimi',

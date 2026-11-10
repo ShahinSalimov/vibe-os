@@ -2,14 +2,28 @@
 
 Sıfırdan ilk satışa qədər. Addımları sıra ilə et; hər biri bir dəfə edilir.
 
+## Demo linki (müştəriyə göndərmək üçün)
+
+Müştəriyə əvvəlcə **yalnız demo** versiyanı göndərirsən: brauzerdə açılır, heç nə quraşdırmaq lazım deyil, real istifadə üçün "Tam versiya — satıcıya yazın" deyir. Demo versiyanı yenidən yığmaq (əlaqə linkin ilə):
+
+```bash
+python3 scripts/build_web_demo.py demo-web https://instagram.com/SƏNİN-SƏHİFƏN
+```
+
+`demo-web` qovluğunu Netlify-ə yüklə, linki müştərilərə göndər.
+
 ## Satış necə işləyir
 
 1. Instagram / TikTok-da müğənniyə təqdimat mətni və demo linki göndərirsən.
 2. Müğənni tətbiqi quraşdırır və **"Demonu aç"** ilə dolu nümunəyə baxır.
 3. Bəyənsə, öz profilini qurur: **3 gün pulsuz** hər şey işləyir.
 4. Ödənişi səninlə birbaşa edir (tətbiqdə ödəniş yoxdur).
-5. Admin paneldə kod yaradırsan, hazır mesajı kopyalayıb göndərirsən.
-6. Müğənni kodu daxil edir: **Digər → Lisenziya → Aktivləşdir**. Tətbiq həmişəlik açılır.
+5. Sən təsdiqləyirsən — iki yoldan biri:
+   - **Ən sadə:** admin paneldə müştərinin sətrində **"Aktivləşdir"** düyməsi. Müştəriyə heç nə göndərmək lazım deyil, tətbiqi növbəti açanda aktiv olur.
+   - **Kodla:** admin paneldə kod yaradırsan, hazır mesajı göndərirsən; müğənni **Digər → Lisenziya** bölməsində daxil edir.
+6. Tətbiq həmişəlik açılır (birdəfəlik ödəniş).
+
+Vacib: müştəri sınağın ilk günündən **e-poçtla daxil olsun** (Digər → Hesab və bulud). Yalnız daxil olan müştəri admin paneldə görünür və "Aktivləşdir" düyməsi ilə təsdiqlənə bilər. Sınaq tətbiqin ilk açıldığı gündən sayılır.
 
 Sınaq bitib almayanlar admin paneldə **"Sınağı bitib, almayıb"** siyahısındadır: ən isti satış siyahın.
 
@@ -18,14 +32,15 @@ Sınaq bitib almayanlar admin paneldə **"Sınağı bitib, almayıb"** siyahıs�
 ## 1. Server (Supabase) — 15 dəq
 
 1. https://supabase.com → qeydiyyat → **New project**. Region: **Frankfurt**.
-2. **SQL Editor → New query**. `supabase/migrations/` qovluğundakı faylları **sıra ilə** (0001, 0002, 0003, 0004, 0005) tam kopyala və hər birini **Run** et.
+2. **SQL Editor → New query**. `supabase/setup_all.sql` faylını tam kopyala, yapışdır, **Run** bas. (Bütün qurulum bir fayldadır, bir dəfə işə salınır.)
 3. **Authentication → Providers → Email**: aktiv.
 4. **Authentication → Email Templates → Magic Link**: mətndə `{{ .Token }}` olsun (6 rəqəmli kod).
 5. Müştərilər çoxalanda **Authentication → SMTP** bölməsində öz e-poçt servisini qoş (Supabase-in daxili poçtu saatda bir neçə məktubla məhduddur).
 
 ## 2. Özünü admin et
 
-Əvvəlcə admin panelə bir dəfə e-poçtunla daxil olmağa çalış (kod istə) ki, hesabın yaransın, ya da tətbiqdə həmin e-poçtla daxil ol. Sonra **SQL Editor**-da (e-poçtu öz e-poçtunla əvəz et):
+1. **Authentication → Users → Add user → Create new user**: öz e-poçtunu yaz, istənilən şifrə, **Auto Confirm User** işarəli olsun.
+2. **SQL Editor**-da bu sətri işə sal (e-poçtu öz e-poçtunla əvəz et):
 
 ```sql
 insert into public.platform_admins (user_id)
@@ -93,7 +108,7 @@ Kodda dəyişiklik olanda yeni APK yığırsan. Android-də müştəri yenisini 
 
 ## Yoxlama siyahısı (ilk satışdan əvvəl)
 
-- [ ] 5 miqrasiya işə salınıb, `bash tests/db/run.sh` lokal olaraq keçir
+- [ ] `setup_all.sql` işə salınıb (xətasız "Success")
 - [ ] Özünü admin etmisən, admin paneldə statistikanı görürsən
 - [ ] Test kodu yaratdın, ikinci telefonda tətbiqdə aktivləşdirdin, paneldə "İstifadə olunub" göründü
 - [ ] Sifariş səhifəsindən test sorğusu göndərdin, tətbiqə düşdü

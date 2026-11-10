@@ -14,3 +14,6 @@ export function bookingLink(slug: string | null): string | null {
 
 /** Where customers buy an activation code (e.g. https://instagram.com/yourpage). Shown on the licence screen. */
 export const SELLER_CONTACT_URL = process.env.EXPO_PUBLIC_SELLER_CONTACT_URL ?? '';
+
+/** Sales demo build (shared link): only the demo can be opened; real use needs the full app. */
+export const DEMO_ONLY = process.env.EXPO_PUBLIC_DEMO_ONLY === '1';

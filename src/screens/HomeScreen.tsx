@@ -6,6 +6,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '../components/Avatar';
 import { AgendaCard } from '../components/AgendaCard';
+import { isCloudConfigured } from '../cloud/config';
 import { DemoBanner } from '../demo/DemoBanner';
 import { EventRow } from '../components/rows';
 import { Card, IconButton, Screen, SectionHeader, T, tap, type IconName } from '../components/ui';
@@ -35,6 +36,10 @@ export default function HomeScreen() {
   const expiringDocs = useAppStore((s) => s.docs);
 
   const { read, write } = useRole();
+  const signedIn = useAppStore((s) => !!s.cloud.email);
+  const isDemo = useAppStore((s) => !!s.settings.demo);
+  // cloud builds: customers must sign in so the seller sees them and can activate the licence
+  const showSignInNudge = isCloudConfigured() && !signedIn && !isDemo;
   const lic = useLicense().state;
   const myId = useAppStore((s) => s.cloud.userId);
   const today = toISODate(new Date());
@@ -158,6 +163,24 @@ export default function HomeScreen() {
           <T variant="caption" color={colors.gold}>
             {t('license.activate')}
           </T>
+        </Pressable>
+      ) : null}
+
+      {showSignInNudge ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => {
+            tap();
+            nav.navigate('Account');
+          }}
+          style={({ pressed }) => [styles.nudge, pressed && { opacity: 0.85 }]}
+        >
+          <Ionicons name="cloud-upload" size={20} color={colors.gold} />
+          <View style={{ flex: 1 }}>
+            <T variant="bodyLg">{t('account.nudgeTitle')}</T>
+            <T variant="caption">{t('account.nudgeBody')}</T>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
         </Pressable>
       ) : null}
 
@@ -298,6 +321,16 @@ const styles = themed(() =>
   header: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   rowCenter: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   quickRow: { flexDirection: 'row', gap: space.md },
+  nudge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+    padding: space.md,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.gold + '55',
+  },
   licence: {
     flexDirection: 'row',
     alignItems: 'center',

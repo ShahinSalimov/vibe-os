@@ -337,4 +337,19 @@ select pg_temp.login('00000000-0000-0000-0000-0000000000b1');
 select pg_temp.expect_error(format($q$select public.redeem_license('%s', '%s')$q$, :'lic2', :'wsb_create_workspace'), 'code_not_found');
 reset role;
 \echo PASS 14 licensing: trial, expiry blocks writes (not reads, not leads), one-time codes, admin-only control
+-- ---------- 15. trial counts from the first day of use ----------
+insert into auth.users values ('00000000-0000-0000-0000-0000000000f1', 'late@x.az'), ('00000000-0000-0000-0000-0000000000f2', 'fresh@x.az');
+set role authenticated;
+select pg_temp.login('00000000-0000-0000-0000-0000000000f1'); -- used the app 5 days offline, signs in now
+select public.create_workspace('Late', 'late-artist', 'singer', '', 'AZN', now() - interval '5 days') as ws_late \gset
+select pg_temp.ok((select trial_ends_at < now() from public.licenses where workspace_id = :'ws_late'), 'trial already over after 5 offline days');
+select pg_temp.expect_error(format($q$insert into public.events (id, workspace_id, title, type, date, currency) values ('evt-late-0001', '%s', 'x', 'concert', current_date, 'AZN')$q$, :'ws_late'), 'license_required');
+select pg_temp.login('00000000-0000-0000-0000-0000000000f2'); -- clock in the future is ignored
+select public.create_workspace('Fresh', 'fresh-artist', 'singer', '', 'AZN', now() + interval '30 days') as ws_fresh \gset
+select pg_temp.ok((select trial_ends_at between now() + interval '71 hours' and now() + interval '73 hours' from public.licenses where workspace_id = :'ws_fresh'), 'future start ignored: 3 days from now');
+reset role;
+set role anon;
+select pg_temp.expect_error($q$select public.random_byte()$q$, 'permission denied');
+reset role;
+\echo PASS 15 trial counts from first use; future dates ignored; codes work without pgcrypto in public
 \echo ALL DATABASE TESTS PASSED

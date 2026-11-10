@@ -8,3 +8,7 @@ create role anon nologin;
 create role authenticated nologin;
 grant usage on schema public, auth to anon, authenticated;
 grant execute on function auth.uid() to anon, authenticated;
+
+-- Like Supabase: pgcrypto lives in the "extensions" schema, not in "public".
+create schema extensions;
+create extension pgcrypto schema extensions;

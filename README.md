@@ -83,7 +83,7 @@ Telefonun ana ekranındakı tətbiq ikonu hər istifadəçi üçün dəyişdiril
 | 6 tema, tətbiq ikonu və açılış ekranı | hazır |
 | Əsas ekran: bu günün tam planı | hazır |
 
-Sıfırdan ilk satışa qədər: [docs/SELLER_GUIDE.md](docs/SELLER_GUIDE.md)
+Sıfırdan ilk satışa qədər: [docs/SELLER_GUIDE.md](docs/SELLER_GUIDE.md) · Satış mətnləri və Reels ssenarisi: [docs/SALES_KIT.md](docs/SALES_KIT.md) · Server qurulumu bir faylda: `supabase/setup_all.sql`
 
 ## Növbəti mərhələlər
 

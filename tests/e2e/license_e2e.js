@@ -21,7 +21,7 @@ const state = (createdAt, license) => ({ version: 6, state: {
   // 1. trial, day 2 of 3 (local, before sign-in)
   let p = await open(state(ago(30), null));
   let body = await p.locator('body').innerText();
-  console.log('1. trial strip:', body.includes('Pulsuz sınaq: 2 gün qalıb'), '| can add (voice btn):', body.includes('Səslə əlavə et'));
+  console.log('1. trial strip:', body.includes('Pulsuz sınaq: 2 gün qalıb'), '| can add (voice btn):', body.includes('Səslə əlavə et'), '| sign-in nudge:', body.includes('Məlumatlarınızı qoruyun'));
   await p.screenshot({ path: `${SHOTS}/l1-trial-home.png` });
   // 2. trial expired (local clock)
   p = await open(state(ago(80), null));

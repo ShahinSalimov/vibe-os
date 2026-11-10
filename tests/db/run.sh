@@ -16,5 +16,6 @@ trap cleanup EXIT
 
 PSQL=(psql -h /tmp -p "$PORT" -U postgres -d postgres -v ON_ERROR_STOP=1 -q -At)
 "${PSQL[@]}" -f "$ROOT/tests/db/supabase_stub.sql"
-for f in "$ROOT"/supabase/migrations/*.sql; do "${PSQL[@]}" -f "$f"; done
+if [ "${SETUP_ALL:-0}" = "1" ]; then "${PSQL[@]}" -f "$ROOT/supabase/setup_all.sql"
+else for f in "$ROOT"/supabase/migrations/*.sql; do "${PSQL[@]}" -f "$f"; done; fi
 "${PSQL[@]}" -f "$ROOT/tests/db/rls.test.sql" 2>&1 | sed -E "s/^psql:[^ ]+ NOTICE:  //; s/^NOTICE:  //" | grep -v "^$"

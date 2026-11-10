@@ -4,6 +4,7 @@ import { Image, KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } fr
 import { useTranslation } from 'react-i18next';
 import { EditableAvatar } from '../components/Avatar';
 import { ThemePicker } from '../components/ThemePicker';
+import { DEMO_ONLY } from '../cloud/config';
 import { Banner, Button, Chips, Field, Screen, T, tap, type IconName } from '../components/ui';
 import { currencySymbol } from '../lib/format';
 import {
@@ -89,8 +90,13 @@ export default function OnboardingScreen() {
               })}
             </View>
             <View style={{ flex: 1 }} />
-            <Button label={t('common.next')} icon="arrow-forward" onPress={() => setStep(1)} />
-            <Button label={t('demo.open')} icon="play-circle" variant="secondary" onPress={() => loadDemo(language, theme)} />
+            {DEMO_ONLY ? null : <Button label={t('common.next')} icon="arrow-forward" onPress={() => setStep(1)} />}
+            <Button
+              label={t('demo.open')}
+              icon="play-circle"
+              variant={DEMO_ONLY ? 'primary' : 'secondary'}
+              onPress={() => loadDemo(language, theme)}
+            />
             <T variant="caption" style={{ textAlign: 'center' }}>
               {t('demo.openHint')}
             </T>

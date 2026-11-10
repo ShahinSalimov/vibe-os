@@ -291,6 +291,8 @@ const en = {
     errors: { name: 'Enter a name' },
   },
   account: {
+    nudgeTitle: 'Protect your data: sign in',
+    nudgeBody: 'Your records are backed up and the seller can activate VIBE OS for you.',
     title: 'Account',
     signedOutTitle: 'Back up your data',
     signedOutBody: 'Sign in with your email to keep your data safe in the cloud, use it on several phones and get your booking link.',
@@ -658,6 +660,9 @@ const en = {
     tomorrow: 'Tomorrow',
   },
   demo: {
+    fullTitle: 'Full version',
+    fullBody: 'This is a demo. To use VIBE OS with your own events, money records and team, get the app from the seller: the first 3 days are free.',
+    contactLabel: 'Contact: {{contact}}',
     open: 'See the demo',
     openHint: 'A full example with weddings, concerts, money and songs. Nothing is sent anywhere.',
     banner: 'Demo mode',

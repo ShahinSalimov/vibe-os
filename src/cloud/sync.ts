@@ -71,6 +71,8 @@ async function ensureWorkspace(sb: SupabaseClient, userId: string): Promise<Ws |
     p_artist_role: p.role,
     p_genre: p.genre,
     p_currency: st.settings.currency,
+    // the 3-day trial counts from the first day this phone used the app
+    p_trial_started: p.createdAt,
   });
   if (e2) throw e2;
   return { id: id as string, slug, role: 'owner' };
