@@ -22,6 +22,7 @@ export type RootStackParamList = {
   PersonalDoc: { id?: string } | undefined;
   Team: undefined;
   License: undefined;
+  Profile: undefined;
   Tasks: undefined;
   TaskForm: { id?: string; eventId?: string } | undefined;
 };

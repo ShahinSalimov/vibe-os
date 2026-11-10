@@ -6,7 +6,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '../components/Avatar';
 import { EventRow } from '../components/rows';
-import { Card, Screen, SectionHeader, T, tap, type IconName } from '../components/ui';
+import { Card, IconButton, Screen, SectionHeader, T, tap, type IconName } from '../components/ui';
 import { parseVoice } from '../lib/voiceParse';
 import { daysUntil } from '../notify/plan';
 import { useLicense } from '../license/useLicense';
@@ -106,15 +106,28 @@ export default function HomeScreen() {
   return (
     <Screen>
       <View style={styles.header}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('profile.title')}
+          onPress={() => {
+            tap();
+            nav.navigate('Profile');
+          }}
+          hitSlop={6}
+        >
+          <Avatar name={profile?.stageName} uri={profile?.photoUri} size={48} />
+        </Pressable>
         <View style={{ flex: 1 }}>
           <T variant="caption">{greeting},</T>
           <T variant="h1" numberOfLines={1}>
             {profile?.stageName}
           </T>
         </View>
-        <Pressable accessibilityRole="button" accessibilityLabel={t('more.profile')} onPress={() => nav.navigate('Tabs', { screen: 'More' } as never)}>
-          <Avatar name={profile?.stageName} uri={profile?.photoUri} size={48} />
-        </Pressable>
+        <IconButton
+          icon="settings-outline"
+          label={t('profile.settings')}
+          onPress={() => nav.navigate('Tabs', { screen: 'More' } as never)}
+        />
       </View>
 
       {lic.kind === 'trial' || lic.kind === 'expired' || lic.kind === 'suspended' ? (

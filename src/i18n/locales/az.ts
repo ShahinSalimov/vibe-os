@@ -430,6 +430,8 @@ const az: Dictionary = {
     },
   },
   profile: {
+    title: 'Profil',
+    settings: 'Parametrlər',
     photo: 'Profil şəkli',
     addPhoto: 'Şəkil əlavə et',
     changePhoto: 'Şəkli dəyiş',

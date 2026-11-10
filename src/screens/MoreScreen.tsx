@@ -8,7 +8,7 @@ import { Pressable } from 'react-native';
 import type { RootStackParamList } from '../navigation/types';
 import { Platform, StyleSheet, Switch, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { EditableAvatar } from '../components/Avatar';
+import { Avatar } from '../components/Avatar';
 import { ThemePicker } from '../components/ThemePicker';
 import { Button, Card, Chips, Screen, SectionHeader, T, type IconName } from '../components/ui';
 import { confirmAction, notify } from '../lib/confirm';
@@ -82,22 +82,25 @@ export default function MoreScreen() {
     <Screen>
       <T variant="h1">{t('more.title')}</T>
 
-      <Card style={styles.profile}>
-        <EditableAvatar
-          name={profile?.stageName}
-          uri={profile?.photoUri}
-          size={64}
-          onChange={(photoUri) => updateProfile({ photoUri })}
-        />
-        <View style={{ flex: 1 }}>
-          <T variant="title" numberOfLines={1}>
-            {profile?.stageName}
-          </T>
-          <T variant="caption">
-            {[profile ? t(`roles.${profile.role}`) : '', profile?.genre].filter(Boolean).join(' · ')}
-          </T>
-        </View>
-      </Card>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t('profile.title')}
+        onPress={() => nav.navigate('Profile')}
+        style={({ pressed }) => [pressed && { opacity: 0.85 }]}
+      >
+        <Card style={styles.profile}>
+          <Avatar name={profile?.stageName} uri={profile?.photoUri} size={64} />
+          <View style={{ flex: 1 }}>
+            <T variant="title" numberOfLines={1}>
+              {profile?.stageName}
+            </T>
+            <T variant="caption">
+              {[profile ? t(`roles.${profile.role}`) : '', profile?.genre].filter(Boolean).join(' · ')}
+            </T>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={colors.textFaint} />
+        </Card>
+      </Pressable>
 
       <Card style={{ gap: 0, paddingVertical: space.xs }}>
         <NavRow

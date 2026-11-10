@@ -454,6 +454,8 @@ const ru = {
     },
   },
   profile: {
+    title: 'Профиль',
+    settings: 'Настройки',
     photo: 'Фото профиля',
     addPhoto: 'Добавить фото',
     changePhoto: 'Изменить фото',

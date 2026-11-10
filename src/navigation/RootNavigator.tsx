@@ -17,6 +17,7 @@ import PersonalDocScreen from '../screens/docs/PersonalDocScreen';
 import RiderScreen from '../screens/docs/RiderScreen';
 import EventFormScreen from '../screens/EventFormScreen';
 import LicenseScreen from '../screens/LicenseScreen';
+import ProfileScreen from '../screens/ProfileScreen';
 import { TaskFormScreen, TasksScreen } from '../screens/team/TasksScreens';
 import TeamScreen from '../screens/team/TeamScreen';
 import { useRole } from '../team/useRole';
@@ -139,6 +140,7 @@ export default function RootNavigator() {
             <Stack.Screen name="Documents" component={DocumentsScreen} />
             <Stack.Screen name="Team" component={TeamScreen} />
             <Stack.Screen name="License" component={LicenseScreen} />
+            <Stack.Screen name="Profile" component={ProfileScreen} />
             <Stack.Screen name="Tasks" component={TasksScreen} />
             <Stack.Screen name="TaskForm" component={TaskFormScreen} options={{ presentation: 'modal' }} />
             <Stack.Screen name="Contract" component={ContractScreen} />

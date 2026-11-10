@@ -428,6 +428,8 @@ const en = {
     },
   },
   profile: {
+    title: 'Profile',
+    settings: 'Settings',
     photo: 'Profile photo',
     addPhoto: 'Add a photo',
     changePhoto: 'Change photo',
