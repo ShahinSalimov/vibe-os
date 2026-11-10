@@ -133,6 +133,24 @@ Hazır olanda verilən linkdən APK-nı telefona yüklə, sonra `npx expo start 
 
 ---
 
+## 9. Yeni funksiyalar (demo, gündəlik, tema, profil)
+Ən asanı: Digər → aşağıda "Bütün məlumatları sil" → tətbiq ilk ekrana qayıdır.
+
+| # | Addım | Gözlənilən nəticə |
+|---|---|---|
+| 9.1 | İlk ekranda dil seç → **Demonu aç** | Dolu tətbiq: yuxarıda "Demo rejimi" zolağı, ad "Aysel (demo)" |
+| 9.2 | Əsas ekran | "BU GÜN" kartında 12:00 məşq, 19:30 toy (qalıq ilə), gecikmiş ödəniş, tapşırıqlar, yeni sifariş; aşağıda "Sabah" |
+| 9.3 | Kartda tapşırığın dairəsinə toxun | Tapşırıq "edildi" olur, kartdan çıxır |
+| 9.4 | Kartda toy sətrinə toxun | Toyun səhifəsi açılır |
+| 9.5 | Maliyyə, Sifarişlər, Digər → Studiya, Digər → Sənədlər | Hər yerdə nümunə məlumat var |
+| 9.6 | Digər → Görünüş → **Gül qızılı**, sonra **Qrafit** | Bütün tətbiqin rəngi dərhal dəyişir, Digər ekranında qalırsan |
+| 9.7 | Əsas ekranda **soldakı şəkil** | Profil səhifəsi açılır: şəkil, ad, peşə, janr |
+| 9.8 | Əsas ekranda **sağdakı dişli çarx** | Digər (parametrlər) açılır |
+| 9.9 | Yuxarıdakı "Demo rejimi" zolağı → təsdiqlə | Nümunə məlumatlar silinir, ilk ekran açılır |
+| 9.10 | İndi öz profilini qur: 4-cü addımda tema seç | Seçdiyin tema dərhal görünür, yazdığın ad itmir |
+
+Qeyd: lisenziya (3 gün sınaq), komanda və admin panel yalnız bulud (Supabase) qoşulandan sonra işləyir — bulud olmadan tətbiq məhdudiyyətsiz işləyir. Yeni ikon və açılış ekranı Expo Go-da görünmür (Expo Go öz ikonunu göstərir), yalnız APK-da.
+
 ## Problem tapanda belə yaz
 ```
 Bölmə / addım: (məs. 5.2)
