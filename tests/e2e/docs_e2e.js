@@ -37,10 +37,12 @@ const SHOTS = process.argv[2];
   console.log('   body has details:', ['Toy mərasimində', 'Aysel', 'Rauf Məmmədov', '19:30', 'Fairmont, Bakı', '3\u00A0000', '1\u00A0000', '2\u00A0000'].map(x => body.includes(JSON.parse('"' + x + '"')) ? 'ok' : 'MISSING:' + x).join(' '));
   
   // Russian contract while app stays Azerbaijani
-  await click('Русский'); await click('Şablondan doldur'); await p.waitForTimeout(400);
+  await click('Русский'); await click('Şablondan doldur'); await p.waitForTimeout(300);
+  await p.getByRole('button', { name: 'Şablondan doldur' }).last().click(); await p.waitForTimeout(400); // confirm replacing the text
   const ru = await fieldOf('Müqavilənin mətni').inputValue();
   console.log('   RU text:', ru.startsWith('Договор на выступление на свадьбе'), ru.includes('Свадьба') || ru.includes('свадьбе'));
   await click('Azərbaycanca'); await click('Şablondan doldur'); await p.waitForTimeout(300);
+  await p.getByRole('button', { name: 'Şablondan doldur' }).last().click(); await p.waitForTimeout(300);
   await click('Göndərilib');
   await p.screenshot({ path: `${SHOTS}/d1-contract.png` });
   await click('PDF paylaş'); await p.waitForTimeout(800);
@@ -50,7 +52,8 @@ const SHOTS = process.argv[2];
   await fieldOf('Müqavilənin mətni').fill(body + '\nKart: 4111 1111 1111 1111');
   await click('Yadda saxla'); await p.waitForTimeout(300);
   st = await store();
-  console.log('   card blocked (text unchanged in store):', !st.contracts[0].body.includes('4111'));
+  console.log('   card blocked (text unchanged in store):', !st.contracts[0].body.includes('4111'), '| warning shown:', (await p.locator('body').innerText()).includes('Kart və ya bank nömrəsi aşkarlandı'));
+  await p.getByRole('button', { name: 'OK' }).last().click(); await p.waitForTimeout(200);
   await fieldOf('Müqavilənin mətni').fill(body);
   await click('Yadda saxla'); await p.waitForTimeout(400);
   st = await store(); console.log('   still one contract after PDF + 2 saves:', st.contracts.length === 1);
@@ -93,7 +96,8 @@ const SHOTS = process.argv[2];
   // 4. delete event -> contract unlinked, not deleted
   await p.goto('http://localhost:8099/'); await p.waitForTimeout(1200);
   await click('Tədbirlər'); await p.getByText('Toy · Fairmont', { exact: true }).last().click(); await p.waitForTimeout(400);
-  await p.getByText('Sil', { exact: true }).last().click(); await p.waitForTimeout(500);
+  await p.getByText('Sil', { exact: true }).last().click(); await p.waitForTimeout(400);
+  await p.getByRole('button', { name: 'Sil' }).last().click(); await p.waitForTimeout(500); // in-app confirm dialog
   st = await store();
   console.log('4. after event delete: contracts', st.contracts.length, '| eventId', st.contracts[0].eventId ?? 'none');
   console.log('ERRORS:', JSON.stringify(errors, null, 1));

@@ -71,7 +71,8 @@ const SHOTS = process.argv[2], FACE = process.argv[3];
   await p.goto('http://localhost:8099/'); await p.waitForTimeout(1200);
   await click('Digər'); await click('Studiya'); await p.waitForTimeout(400);
   await click('Gecələr'); await p.waitForTimeout(400);
-  await p.getByText('Sil', { exact: true }).last().click(); await p.waitForTimeout(600);
+  await p.getByText('Sil', { exact: true }).last().click(); await p.waitForTimeout(400);
+  await p.getByRole('button', { name: 'Sil' }).last().click(); await p.waitForTimeout(600); // in-app confirm dialog
   st = await store();
   console.log('5. after delete: songs', st.songs.length, '| assets', st.assets.length, '| setlist songs', st.setlists[0].songIds.length, '| tombstone', st.tombstones.some(t => t.table === 'songs'));
   console.log('ERRORS:', JSON.stringify(errors.filter(e => !e.includes('requestPermissionsAsync')), null, 1));

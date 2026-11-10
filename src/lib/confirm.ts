@@ -1,6 +1,25 @@
 import { Alert, Platform } from 'react-native';
 
-/** Cross-platform confirm dialog (Alert on iOS/Android, window.confirm on web). */
+// Native: the system Alert. Web: an in-app dialog (DialogHost) — browser confirm()/alert()
+// are blocked in some embedded viewers and look out of place in an installed web app.
+
+export interface DialogRequest {
+  title: string;
+  message: string;
+  confirmLabel: string;
+  cancelLabel?: string; // absent = information dialog with one button
+  destructive?: boolean;
+  resolve: (ok: boolean) => void;
+}
+
+type Listener = (req: DialogRequest) => void;
+let listener: Listener | null = null;
+
+/** Called once by DialogHost. */
+export function setDialogListener(l: Listener | null) {
+  listener = l;
+}
+
 export function confirmAction(opts: {
   title: string;
   message: string;
@@ -9,8 +28,10 @@ export function confirmAction(opts: {
   destructive?: boolean;
 }): Promise<boolean> {
   if (Platform.OS === 'web') {
-    // eslint-disable-next-line no-alert
-    return Promise.resolve(typeof window !== 'undefined' && window.confirm(`${opts.title}\n\n${opts.message}`));
+    return new Promise((resolve) => {
+      if (listener) listener({ ...opts, resolve });
+      else resolve(false);
+    });
   }
   return new Promise((resolve) => {
     Alert.alert(opts.title, opts.message, [
@@ -22,8 +43,7 @@ export function confirmAction(opts: {
 
 export function notify(title: string, message: string) {
   if (Platform.OS === 'web') {
-    // eslint-disable-next-line no-alert
-    if (typeof window !== 'undefined') window.alert(`${title}\n\n${message}`);
+    if (listener) listener({ title, message, confirmLabel: 'OK', resolve: () => {} });
     return;
   }
   Alert.alert(title, message);

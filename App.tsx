@@ -5,6 +5,7 @@ import { ActivityIndicator, AppState, Platform, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import i18n from './src/i18n';
 import { useAutoSync } from './src/cloud/useAutoSync';
+import { DialogHost } from './src/components/DialogHost';
 import RootNavigator from './src/navigation/RootNavigator';
 import { useReminders } from './src/notify/useReminders';
 import LockScreen from './src/screens/LockScreen';
@@ -62,6 +63,7 @@ export default function App() {
       <StatusBar style={colors.mode === 'light' ? 'dark' : 'light'} />
       <View key={hasProfile ? theme : 'onboarding'} style={{ flex: 1, backgroundColor: colors.bg }}>
         <RootNavigator />
+        {Platform.OS === 'web' ? <DialogHost /> : null}
         {showLock ? <LockScreen onUnlock={() => setLocked(false)} /> : null}
       </View>
     </SafeAreaProvider>

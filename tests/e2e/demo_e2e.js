@@ -27,7 +27,9 @@ const SHOTS = process.argv[2];
   console.log('stored: demo flag', st.settings.demo, '| lang', st.settings.language, '| events', st.events.length, '| no cloud', st.cloud.workspaceId === null);
   // exit demo -> onboarding, data gone
   await p.goto('http://localhost:8099/'); await p.waitForTimeout(1500);
-  await p.getByLabel('Начать со своими данными').first().click(); await p.waitForTimeout(800);
+  await p.getByLabel('Начать со своими данными').first().click(); await p.waitForTimeout(400);
+  console.log('in-app dialog shown:', (await p.locator('body').innerText()).includes('Выйти из демо?'));
+  await p.getByRole('button', { name: 'Начать со своими данными' }).last().click(); await p.waitForTimeout(800);
   st = await p.evaluate(() => JSON.parse(localStorage.getItem('vibe-os-store')).state);
   body = await p.locator('body').innerText();
   console.log('after exit: onboarding', body.includes('Открыть демо'), '| data cleared', st.events.length === 0 && st.records.length === 0 && !st.profile);
