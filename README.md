@@ -84,10 +84,11 @@ npm install
 ```
 
 ```bash
-npx expo start
+npx expo start --go
 ```
 
 Telefonda **Expo Go** tətbiqini yükləyin (App Store / Google Play) və ekrandakı QR kodu skan edin.
+Ətraflı test planı və səs tanıma ilə Android yığımı: [docs/TEST_PLAN.md](docs/TEST_PLAN.md)
 
 ## Yoxlamalar
 

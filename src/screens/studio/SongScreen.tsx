@@ -201,6 +201,11 @@ function AudioSection({ songId, onNeedSave }: { songId?: string; onNeedSave: () 
   const [recording, setRecording] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // iPhone: play through the speaker even when the ring/silent switch is on
+  useEffect(() => {
+    setAudioModeAsync({ playsInSilentMode: true }).catch(() => {});
+  }, []);
+
   // learn the duration of imported files the first time they play
   useEffect(() => {
     const a = list.find((x) => x.id === currentId);
