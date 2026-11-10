@@ -32,6 +32,8 @@ export function useAutoSync() {
         s.contacts !== prev.contacts ||
         s.songs !== prev.songs ||
         s.setlists !== prev.setlists ||
+        s.contracts !== prev.contracts ||
+        s.riders !== prev.riders ||
         s.tombstones !== prev.tombstones
       ) {
         schedule();

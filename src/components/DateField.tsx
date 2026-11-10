@@ -176,3 +176,55 @@ const styles = StyleSheet.create({
   cellText: { color: colors.text, fontSize: font.body },
   dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.violet, position: 'absolute', bottom: 6 },
 });
+
+/** Date that may be empty: shows an "add date" button until set, plus a clear button. */
+export function OptionalDateField({
+  label,
+  value,
+  onChange,
+  addLabel,
+}: {
+  label: string;
+  value: ISODate | '';
+  onChange: (d: ISODate | '') => void;
+  addLabel: string;
+}) {
+  if (!value) {
+    return (
+      <View style={{ gap: space.xs + 2 }}>
+        <T variant="caption" color={colors.textMuted}>
+          {label}
+        </T>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => {
+            tap();
+            onChange(toISODate(new Date()));
+          }}
+          style={[styles.trigger, { borderStyle: 'dashed' }]}
+        >
+          <Ionicons name="add" size={20} color={colors.gold} />
+          <Text style={[styles.triggerText, { color: colors.textMuted }]}>{addLabel}</Text>
+        </Pressable>
+      </View>
+    );
+  }
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: space.sm }}>
+      <View style={{ flex: 1 }}>
+        <DateField label={label} value={value} onChange={onChange} />
+      </View>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="clear"
+        onPress={() => {
+          tap();
+          onChange('');
+        }}
+        style={[styles.trigger, { width: TAP, justifyContent: 'center', paddingHorizontal: 0 }]}
+      >
+        <Ionicons name="close" size={20} color={colors.textMuted} />
+      </Pressable>
+    </View>
+  );
+}

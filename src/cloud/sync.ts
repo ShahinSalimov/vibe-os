@@ -8,7 +8,7 @@ export type SyncResult =
   | { ok: true; pulled: number; pushed: number }
   | { ok: false; error: 'not_configured' | 'not_signed_in' | 'payment_data' | 'network' | string };
 
-const TABLES: SyncTable[] = ['events', 'money_records', 'booking_requests', 'contacts', 'songs', 'setlists'];
+const TABLES: SyncTable[] = ['events', 'money_records', 'booking_requests', 'contacts', 'songs', 'setlists', 'contracts', 'riders'];
 
 let running: Promise<SyncResult> | null = null;
 
@@ -68,6 +68,10 @@ function localItems(table: SyncTable) {
       return s.songs;
     case 'setlists':
       return s.setlists;
+    case 'contracts':
+      return s.contracts;
+    case 'riders':
+      return s.riders;
   }
 }
 

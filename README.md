@@ -54,6 +54,20 @@ Azərbaycan dilində tanıma Android-də (Google) dəstəklənir. iOS-da Azərba
 
 AI ilə musiqi yaratmaq istifadəçinin qərarı ilə hələlik saxlanılıb.
 
+## Phase 3 — Sənədlər (Digər → Sənədlər)
+
+| Hissə | Vəziyyət |
+|---|---|
+| Müqavilələr: 6 şablon (çıxış, toy, korporativ, əməkdaşlıq, sponsorluq, boş), AZ/RU/EN | hazır |
+| Tədbirdən avtomatik doldurma (tərəflər, tarix, saat, məkan, qonorar, avans, qalıq), redaktə, PDF paylaşma | hazır |
+| Status (qaralama → göndərilib → imzalanıb), imza son tarixi, imzalı nüsxənin şəkli (telefonda) | hazır |
+| Texniki və məişət rider-i: hazır siyahı, sətir/bölmə əlavə etmək, rider dili, PDF | hazır |
+| Şəxsi sənədlər (pasport, viza...): yalnız bitmə tarixi, nömrə yoxdur, heç vaxt buluda yüklənmir | hazır |
+| Xatırlatmalar: tədbirdən 1 gün və 2 saat əvvəl, ödəniş günü, müqavilə son tarixi, sənədin bitməsinə 60/30/7 gün | hazır (telefonda, icazə ilə) |
+| Bulud: müqavilələr maliyyə kimi qorunur (musiqiçi görmür, mühasib yalnız oxuyur), rider bütün komandaya görünür | hazır (`0003_documents.sql`) |
+
+Müqavilə şablonları hüquqi məsləhət deyil, tətbiq bunu istifadəçiyə açıq göstərir.
+
 ## Profil şəkli
 
 Qeydiyyatda (istəyə bağlı) və "Digər" bölməsində seçilir. Əsas ekranda, profil kartında və kilid ekranında göstərilir.
@@ -61,7 +75,7 @@ Telefonun ana ekranındakı tətbiq ikonu hər istifadəçi üçün dəyişdiril
 
 ## Növbəti mərhələlər
 
-Müqavilələr, komanda və rollar (dəvət), texniki rider, səs fayllarının buluda yüklənməsi, AI köməkçi.
+Komanda və rollar (dəvət), tapşırıqlar, səs fayllarının və imzalı nüsxələrin buluda yüklənməsi, AI köməkçi.
 
 ## İşə salmaq
 

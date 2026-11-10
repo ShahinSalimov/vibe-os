@@ -6,7 +6,7 @@ export interface CloudState {
   slug: string | null;
   lastPushAt: string | null;
   /** Per-table pull cursor (server synced_at). */
-  pullCursors: Partial<Record<'events' | 'money_records' | 'booking_requests' | 'contacts' | 'songs' | 'setlists', string>>;
+  pullCursors: Partial<Record<'events' | 'money_records' | 'booking_requests' | 'contacts' | 'songs' | 'setlists' | 'contracts' | 'riders', string>>;
   lastSyncAt: string | null;
 }
 
@@ -19,11 +19,12 @@ export const emptyCloud: CloudState = {
   lastSyncAt: null,
 };
 
-/** v1 -> v2: updatedAt, bookings, contacts, tombstones, cloud. v2 -> v3: studio (songs, assets, setlists). */
+/** v1 -> v2: updatedAt, bookings, contacts, tombstones, cloud. v2 -> v3: studio (songs, assets, setlists). v3 -> v4: contracts, riders, personal docs, reminders flag. */
 export function migrateStore(state: Record<string, unknown>, version: number): Record<string, unknown> {
   let out = state;
   if (version < 2) out = migrateV1(out);
   if (version < 3) out = { ...out, songs: [], assets: [], setlists: [] };
+  if (version < 4) out = { ...out, contracts: [], riders: [], docs: [], reminders: false };
   return out;
 }
 

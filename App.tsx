@@ -6,6 +6,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import i18n from './src/i18n';
 import { useAutoSync } from './src/cloud/useAutoSync';
 import RootNavigator from './src/navigation/RootNavigator';
+import { useReminders } from './src/notify/useReminders';
 import LockScreen from './src/screens/LockScreen';
 import { useAppStore } from './src/store/useAppStore';
 import { colors } from './src/theme/tokens';
@@ -17,6 +18,7 @@ export default function App() {
   const appLock = useAppStore((s) => s.settings.appLock);
   const [locked, setLocked] = useState(true);
   useAutoSync();
+  useReminders();
   const appState = useRef(AppState.currentState);
 
   // Saved language wins over device language once the user has onboarded.

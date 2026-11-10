@@ -13,11 +13,11 @@ import { Button, Card, Chips, Screen, SectionHeader, T, type IconName } from '..
 import { confirmAction, notify } from '../lib/confirm';
 import { currencySymbol } from '../lib/format';
 import { CURRENCIES, LANGUAGES, type Language } from '../lib/types';
+import { requestReminderPermission } from '../notify/scheduler';
 import { useAppStore } from '../store/useAppStore';
 import { colors, space } from '../theme/tokens';
 
 const NEXT_MODULES: { key: string; icon: IconName }[] = [
-  { key: 'moduleContracts', icon: 'document-text' },
   { key: 'moduleTeam', icon: 'people' },
   { key: 'moduleRider', icon: 'list' },
   { key: 'moduleAI', icon: 'sparkles' },
@@ -33,6 +33,17 @@ export default function MoreScreen() {
   const cloudEmail = useAppStore((s) => s.cloud.email);
   const contactsCount = useAppStore((s) => s.contacts.length);
   const songsCount = useAppStore((s) => s.songs.length);
+  const docsCount = useAppStore((s) => s.contracts.length + s.docs.length);
+  const reminders = useAppStore((s) => s.reminders);
+  const setReminders = useAppStore((s) => s.setReminders);
+
+  const toggleReminders = async (on: boolean) => {
+    if (!on) return setReminders(false);
+    if (Platform.OS === 'web') return notify(t('more.reminders'), t('more.remindersDenied'));
+    const ok = await requestReminderPermission();
+    if (ok) setReminders(true);
+    else notify(t('more.reminders'), t('more.remindersDenied'));
+  };
   const nav = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const setLanguage = (l: Language) => {
@@ -92,6 +103,12 @@ export default function MoreScreen() {
           onPress={() => nav.navigate('Studio')}
         />
         <NavRow
+          icon="document-text"
+          label={t('more.documents')}
+          value={docsCount ? String(docsCount) : ''}
+          onPress={() => nav.navigate('Documents')}
+        />
+        <NavRow
           icon={cloudEmail ? 'cloud-done' : 'cloud-upload'}
           iconColor={cloudEmail ? colors.success : colors.gold}
           label={t('more.account')}
@@ -114,6 +131,22 @@ export default function MoreScreen() {
         onChange={(c) => updateSettings({ currency: c })}
         options={CURRENCIES.map((c) => ({ value: c, label: `${currencySymbol(c)} ${c}` }))}
       />
+
+      <Card>
+        <View style={styles.switchRow}>
+          <Ionicons name="notifications" size={24} color={colors.gold} />
+          <View style={{ flex: 1 }}>
+            <T variant="bodyLg">{t('more.reminders')}</T>
+            <T variant="caption">{t('more.remindersBody')}</T>
+          </View>
+          <Switch
+            value={reminders}
+            onValueChange={toggleReminders}
+            trackColor={{ true: colors.gold, false: colors.border }}
+            thumbColor={colors.text}
+          />
+        </View>
+      </Card>
 
       <Card>
         <View style={styles.switchRow}>

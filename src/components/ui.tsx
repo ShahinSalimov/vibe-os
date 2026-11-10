@@ -219,6 +219,7 @@ export function Field({
             input.multiline && styles.inputMultiline,
             voice && { paddingRight: 52 },
             error ? { borderColor: colors.danger } : null,
+            input.style,
           ]}
         />
         {voice ? (

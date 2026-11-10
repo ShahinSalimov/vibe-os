@@ -16,6 +16,10 @@ export type RootStackParamList = {
   Song: { id?: string } | undefined;
   Setlist: { id?: string; eventId?: string } | undefined;
   StageMode: { id: string };
+  Documents: { tab?: 'contracts' | 'riders' | 'personal' } | undefined;
+  Contract: { id?: string; eventId?: string } | undefined;
+  Rider: { kind: 'technical' | 'hospitality' };
+  PersonalDoc: { id?: string } | undefined;
 };
 
 export type TabParamList = {

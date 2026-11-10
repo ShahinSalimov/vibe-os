@@ -8,6 +8,7 @@ import { Avatar } from '../components/Avatar';
 import { EventRow } from '../components/rows';
 import { Card, Screen, SectionHeader, T, tap, type IconName } from '../components/ui';
 import { parseVoice } from '../lib/voiceParse';
+import { daysUntil } from '../notify/plan';
 import { VoiceSheet } from '../voice/VoiceSheet';
 import { monthRange, summarize } from '../lib/finance';
 import { daysBetween, formatMoney, MONTHS, toISODate } from '../lib/format';
@@ -27,6 +28,8 @@ export default function HomeScreen() {
   const events = useAppStore((s) => s.events);
   const records = useAppStore((s) => s.records);
   const newBookings = useAppStore((s) => s.bookings.filter((b) => b.status === 'new').length);
+  const pendingContracts = useAppStore((s) => s.contracts.filter((c) => c.status === 'sent' || (c.status === 'draft' && c.deadline)).length);
+  const expiringDocs = useAppStore((s) => s.docs);
 
   const today = toISODate(new Date());
   const [voiceOpen, setVoiceOpen] = useState(false);
@@ -65,9 +68,24 @@ export default function HomeScreen() {
       });
     if (todayCount) lines.push({ icon: 'flash', text: t('home.briefingEventsToday', { count: todayCount }), color: colors.gold });
     if (weekCount) lines.push({ icon: 'calendar', text: t('home.briefingEventsWeek', { count: weekCount }), color: colors.violet });
+    const docsSoon = expiringDocs.filter((d) => d.expiry && daysUntil(d.expiry, today) <= 60).length;
+    if (pendingContracts)
+      lines.push({
+        icon: 'document-text',
+        text: t('home.briefingContracts', { count: pendingContracts }),
+        color: colors.violet,
+        onPress: () => nav.navigate('Documents', { tab: 'contracts' }),
+      });
+    if (docsSoon)
+      lines.push({
+        icon: 'globe',
+        text: t('home.briefingDocs', { count: docsSoon }),
+        color: colors.warning,
+        onPress: () => nav.navigate('Documents', { tab: 'personal' }),
+      });
     if (overdue) lines.push({ icon: 'alert-circle', text: t('home.briefingOverdue', { count: overdue }), color: colors.danger });
     return lines;
-  }, [events, records, today, t, newBookings, nav]);
+  }, [events, records, today, t, newBookings, nav, pendingContracts, expiringDocs]);
 
   const sum = useMemo(() => summarize(records, currency, monthRange(today)), [records, currency, today]);
   const month = MONTHS[lang].nom[new Date().getMonth()];

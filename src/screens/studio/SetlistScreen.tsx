@@ -15,7 +15,8 @@ import { colors, radius, space } from '../../theme/tokens';
 export default function SetlistScreen({ route, navigation }: RootProps<'Setlist'>) {
   const { t, i18n } = useTranslation();
   const lang = i18n.language as Language;
-  const id = route.params?.id;
+  // Holds the id after the first save, so later saves update instead of creating duplicates.
+  const [id, setId] = useState(route.params?.id);
   const existing = useAppStore((s) => (id ? s.setlists.find((x) => x.id === id) : undefined));
   const songs = useAppStore((s) => s.songs);
   const events = useAppStore((s) => s.events);
@@ -51,7 +52,9 @@ export default function SetlistScreen({ route, navigation }: RootProps<'Setlist'
       notify(t('security.blockedTitle'), t('security.blockedCard'));
       return null;
     }
-    return saveSetlist({ id, title: title.trim(), eventId: eventId || undefined, songIds: chosen });
+    const savedId = saveSetlist({ id, title: title.trim(), eventId: eventId || undefined, songIds: chosen });
+    setId(savedId);
+    return savedId;
   };
 
   const remove = async () => {

@@ -186,4 +186,26 @@ set role anon;
 select pg_temp.expect_error($q$select count(*) from public.songs$q$, 'permission denied');
 reset role;
 \echo PASS 11 studio: team sees songs/setlists, only owner/manager edit, isolated, guarded
+-- ---------- 12. contracts & riders ----------
+set role authenticated;
+select pg_temp.login('00000000-0000-0000-0000-0000000000a1');
+insert into public.contracts (id, workspace_id, title, template, language, counterparty, amount, currency, body)
+values ('ctr-aysel-001', :'wsa_create_workspace', 'Toy müqaviləsi', 'wedding', 'az', 'Rauf', 3000, 'AZN', 'Mətn');
+insert into public.riders (id, workspace_id, kind, title, language, sections)
+values ('rdr-aysel-001', :'wsa_create_workspace', 'technical', 'Texniki rider', 'az', '[{"key":"sound","title":"Səs","items":["2 mikrofon"]}]');
+select pg_temp.expect_error(format($q$insert into public.contracts (id, workspace_id, title, template, language, currency, body) values ('ctr-card-001', '%s', 'x', 'custom', 'az', 'AZN', 'Hesab: DE89 3704 0044 0532 0130 00')$q$, :'wsa_create_workspace'), 'payment_data_not_allowed');
+select pg_temp.expect_error(format($q$insert into public.riders (id, workspace_id, kind, title, language, sections) values ('rdr-card-001', '%s', 'technical', 'x', 'az', '[{"items":["4111111111111111"]}]')$q$, :'wsa_create_workspace'), 'payment_data_not_allowed');
+select pg_temp.login('00000000-0000-0000-0000-00000000000e'); -- musician
+select pg_temp.ok((select count(*) = 0 from public.contracts), 'musician must NOT see contracts');
+select pg_temp.ok((select count(*) = 1 from public.riders), 'musician sees rider');
+update public.riders set title = 'x' where id = 'rdr-aysel-001';
+select pg_temp.login('00000000-0000-0000-0000-0000000000cc'); -- accountant
+select pg_temp.ok((select count(*) = 1 from public.contracts), 'accountant sees contracts');
+update public.contracts set title = 'changed by accountant' where id = 'ctr-aysel-001';
+select pg_temp.login('00000000-0000-0000-0000-0000000000b1');
+select pg_temp.ok((select count(*) = 0 from public.contracts) and (select count(*) = 0 from public.riders), 'B isolated');
+reset role;
+select pg_temp.ok((select title = 'Texniki rider' from public.riders where id = 'rdr-aysel-001'), 'musician must not edit rider');
+select pg_temp.ok((select title = 'Toy müqaviləsi' from public.contracts where id = 'ctr-aysel-001'), 'accountant must not edit contract');
+\echo PASS 12 contracts (finance audience, read-only for accountant) and riders (team reads)
 \echo ALL DATABASE TESTS PASSED

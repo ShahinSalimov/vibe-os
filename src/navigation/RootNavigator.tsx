@@ -11,6 +11,10 @@ import BookingDetailScreen from '../screens/BookingDetailScreen';
 import BookingFormScreen from '../screens/BookingFormScreen';
 import BookingsScreen from '../screens/BookingsScreen';
 import { ContactFormScreen, ContactsScreen } from '../screens/ContactsScreens';
+import ContractScreen from '../screens/docs/ContractScreen';
+import DocumentsScreen from '../screens/docs/DocumentsScreen';
+import PersonalDocScreen from '../screens/docs/PersonalDocScreen';
+import RiderScreen from '../screens/docs/RiderScreen';
 import EventFormScreen from '../screens/EventFormScreen';
 import EventsScreen from '../screens/EventsScreen';
 import HomeScreen from '../screens/HomeScreen';
@@ -113,6 +117,10 @@ export default function RootNavigator() {
             <Stack.Screen name="ContactForm" component={ContactFormScreen} options={{ presentation: 'modal' }} />
             <Stack.Screen name="Account" component={AccountScreen} />
             <Stack.Screen name="Studio" component={StudioScreen} />
+            <Stack.Screen name="Documents" component={DocumentsScreen} />
+            <Stack.Screen name="Contract" component={ContractScreen} />
+            <Stack.Screen name="Rider" component={RiderScreen} />
+            <Stack.Screen name="PersonalDoc" component={PersonalDocScreen} options={{ presentation: 'modal' }} />
             <Stack.Screen name="Song" component={SongScreen} />
             <Stack.Screen name="Setlist" component={SetlistScreen} />
             <Stack.Screen

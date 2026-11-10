@@ -5,6 +5,9 @@ import { newId } from '../lib/id';
 import { emptyCloud, migrateStore } from './migrate';
 import { mergeRemote, mappers } from '../lib/sync';
 import type {
+  Contract,
+  PersonalDoc,
+  Rider,
   ArtistEvent,
   BookingRequest,
   Contact,
@@ -40,6 +43,12 @@ interface AppState {
   /** Audio files: device-only. */
   assets: SongAsset[];
   setlists: Setlist[];
+  contracts: Contract[];
+  riders: Rider[];
+  /** Passport/visa reminders. Device only, never synced. */
+  docs: PersonalDoc[];
+  /** Local reminders (notifications) switched on by the user. */
+  reminders: boolean;
 
   completeOnboarding: (profile: Omit<Profile, 'createdAt'>, settings: Settings) => void;
   updateSettings: (patch: Partial<Settings>) => void;
@@ -63,6 +72,14 @@ interface AppState {
   deleteAsset: (id: string) => string | null;
   saveSetlist: (s: Input<Setlist>) => string;
   deleteSetlist: (id: string) => void;
+
+  saveContract: (c: Input<Contract>) => string;
+  deleteContract: (id: string) => string | null;
+  saveRider: (r: Input<Rider>) => string;
+  deleteRider: (id: string) => void;
+  saveDoc: (d: Input<PersonalDoc>) => string;
+  deleteDoc: (id: string) => string | null;
+  setReminders: (on: boolean) => void;
 
   // cloud
   setCloud: (patch: Partial<CloudState>) => void;
@@ -100,6 +117,10 @@ export const useAppStore = create<AppState>()(
       songs: [],
       assets: [],
       setlists: [],
+      contracts: [],
+      riders: [],
+      docs: [],
+      reminders: false,
 
       completeOnboarding: (profile, settings) => set({ profile: { ...profile, createdAt: now() }, settings }),
       updateSettings: (patch) => set((s) => ({ settings: { ...s.settings, ...patch } })),
@@ -117,6 +138,7 @@ export const useAppStore = create<AppState>()(
           records: s.records.map((r) => (r.eventId === id ? { ...r, eventId: undefined, updatedAt: now() } : r)),
           bookings: s.bookings.map((b) => (b.eventId === id ? { ...b, eventId: undefined, updatedAt: now() } : b)),
           setlists: s.setlists.map((l) => (l.eventId === id ? { ...l, eventId: undefined, updatedAt: now() } : l)),
+          contracts: s.contracts.map((c) => (c.eventId === id ? { ...c, eventId: undefined, updatedAt: now() } : c)),
           tombstones: [...s.tombstones, tomb('events', id)],
         })),
 
@@ -251,6 +273,35 @@ export const useAppStore = create<AppState>()(
           tombstones: [...s.tombstones, tomb('setlists', id)],
         })),
 
+      saveContract: (input) => {
+        const [contracts, id] = upsert(get().contracts, input);
+        set({ contracts });
+        return id;
+      },
+      deleteContract: (id) => {
+        const c = get().contracts.find((x) => x.id === id);
+        set((s) => ({ contracts: s.contracts.filter((x) => x.id !== id), tombstones: [...s.tombstones, tomb('contracts', id)] }));
+        return c?.signedFileUri ?? null;
+      },
+      saveRider: (input) => {
+        const [riders, id] = upsert(get().riders, input);
+        set({ riders });
+        return id;
+      },
+      deleteRider: (id) =>
+        set((s) => ({ riders: s.riders.filter((x) => x.id !== id), tombstones: [...s.tombstones, tomb('riders', id)] })),
+      saveDoc: (input) => {
+        const [docs, id] = upsert(get().docs, input);
+        set({ docs });
+        return id;
+      },
+      deleteDoc: (id) => {
+        const d = get().docs.find((x) => x.id === id);
+        set((s) => ({ docs: s.docs.filter((x) => x.id !== id) }));
+        return d?.fileUri ?? null;
+      },
+      setReminders: (on) => set({ reminders: on }),
+
       setCloud: (patch) => set((s) => ({ cloud: { ...s.cloud, ...patch } })),
 
       applyRemote: (table, rows) =>
@@ -268,6 +319,15 @@ export const useAppStore = create<AppState>()(
               return { songs: mergeRemote(s.songs, rows, mappers.songs.fromRow) };
             case 'setlists':
               return { setlists: mergeRemote(s.setlists, rows, mappers.setlists.fromRow) };
+            case 'riders':
+              return { riders: mergeRemote(s.riders, rows, mappers.riders.fromRow) };
+            case 'contracts': {
+              // keep the device-only scan when a newer version arrives from the cloud
+              const merged = mergeRemote(s.contracts, rows, mappers.contracts.fromRow);
+              if (merged === s.contracts) return {};
+              const local = new Map(s.contracts.map((c) => [c.id, c.signedFileUri]));
+              return { contracts: merged.map((c) => (local.get(c.id) ? { ...c, signedFileUri: local.get(c.id) } : c)) };
+            }
           }
         }),
       clearTombstones: (upTo) =>
@@ -289,13 +349,37 @@ export const useAppStore = create<AppState>()(
           songs: [],
           assets: [],
           setlists: [],
+          contracts: [],
+          riders: [],
+          docs: [],
+          reminders: false,
         }),
     }),
     {
       name: 'vibe-os-store',
-      version: 3,
+      version: 4,
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: ({ profile, settings, events, records, bookings, contacts, tombstones, cloud, songs, assets, setlists }) => ({
+      partialize: ({
+        profile,
+        settings,
+        events,
+        records,
+        bookings,
+        contacts,
+        tombstones,
+        cloud,
+        songs,
+        assets,
+        setlists,
+        contracts,
+        riders,
+        docs,
+        reminders,
+      }) => ({
+        contracts,
+        riders,
+        docs,
+        reminders,
         songs,
         assets,
         setlists,

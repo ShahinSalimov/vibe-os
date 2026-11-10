@@ -129,7 +129,7 @@ export interface Contact {
 }
 
 /** Entities that sync with the cloud. */
-export type SyncTable = 'events' | 'money_records' | 'booking_requests' | 'contacts' | 'songs' | 'setlists';
+export type SyncTable = 'events' | 'money_records' | 'booking_requests' | 'contacts' | 'songs' | 'setlists' | 'contracts' | 'riders';
 
 export interface Tombstone {
   table: SyncTable;
@@ -177,6 +177,66 @@ export interface Setlist {
   title: string;
   eventId?: string;
   songIds: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ---------- Contracts, riders, documents ----------
+
+export type ContractTemplate = 'performance' | 'wedding' | 'corporate' | 'collaboration' | 'sponsorship' | 'custom';
+export const CONTRACT_TEMPLATES: ContractTemplate[] = ['performance', 'wedding', 'corporate', 'collaboration', 'sponsorship', 'custom'];
+export type ContractStatus = 'draft' | 'sent' | 'signed' | 'cancelled';
+export const CONTRACT_STATUSES: ContractStatus[] = ['draft', 'sent', 'signed', 'cancelled'];
+
+export interface Contract {
+  id: string;
+  title: string;
+  template: ContractTemplate;
+  /** Language of the contract text (independent of the app language). */
+  language: Language;
+  eventId?: string;
+  counterparty: string;
+  amount: number;
+  currency: Currency;
+  status: ContractStatus;
+  /** Sign-by date, "" if none. */
+  deadline: ISODate | '';
+  body: string;
+  /** Photo/scan of the signed copy (device only). */
+  signedFileUri?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type RiderKind = 'technical' | 'hospitality';
+export interface RiderSection {
+  key: string;
+  title: string;
+  items: string[];
+}
+export interface Rider {
+  id: string;
+  kind: RiderKind;
+  title: string;
+  language: Language;
+  sections: RiderSection[];
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type PersonalDocKind = 'passport' | 'id' | 'visa' | 'license' | 'other';
+export const PERSONAL_DOC_KINDS: PersonalDocKind[] = ['passport', 'visa', 'id', 'license', 'other'];
+
+/** Personal document reminder. Device only: never synced. No document numbers are stored. */
+export interface PersonalDoc {
+  id: string;
+  kind: PersonalDocKind;
+  title: string;
+  country: string;
+  expiry: ISODate | '';
+  note: string;
+  fileUri?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -53,6 +53,13 @@
           "cameraPermission": false,
           "microphonePermission": false
         }
+      ],
+      "expo-sharing",
+      [
+        "expo-notifications",
+        {
+          "color": "#F5B841"
+        }
       ]
     ],
     "backgroundColor": "#0B0A10"

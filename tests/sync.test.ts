@@ -168,3 +168,18 @@ test('studio: durations, setlist totals, reordering', () => {
   const same = ['a'];
   assert.equal(moveItem(same, 0, 1), same);
 });
+
+import type { Contract, Rider } from '../src/lib/types';
+test('contract/rider mapping: round-trip, no device file sent to cloud', () => {
+  const c: Contract = { id: 'ctr-000001', title: 'Toy', template: 'wedding', language: 'ru', counterparty: 'Rauf', amount: 3000, currency: 'AZN',
+    status: 'sent', deadline: '', body: 'text', signedFileUri: 'file:///scan.jpg', createdAt: '2026-11-01T00:00:00.000Z', updatedAt: '2026-11-01T00:00:00.000Z' };
+  const row = mappers.contracts.toRow(c, 'w');
+  assert.equal(row.deadline, null);
+  assert.ok(!JSON.stringify(row).includes('scan.jpg'), 'scan stays on device');
+  const { signedFileUri, ...rest } = c;
+  assert.deepEqual(mappers.contracts.fromRow({ ...row, amount: '3000.00' }), rest);
+  const r: Rider = { id: 'rdr-000001', kind: 'technical', title: 'Rider', language: 'az', notes: '',
+    sections: [{ key: 'sound', title: 'Səs', items: ['2 mic'] }], createdAt: c.createdAt, updatedAt: c.updatedAt };
+  assert.deepEqual(mappers.riders.fromRow(mappers.riders.toRow(r, 'w')), r);
+  assert.deepEqual(mappers.riders.fromRow({ ...mappers.riders.toRow(r, 'w'), sections: null }).sections, []);
+});
