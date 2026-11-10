@@ -29,6 +29,23 @@ Hər addımda "Gözlənilən nəticə" ilə müqayisə et. Uyğun gəlməyəndə
 4. Ekrana çıxan QR kodu telefonla skan et (iPhone: kamera, Android: Expo Go içində).
 5. Telefon və kompüter eyni Wi-Fi şəbəkəsində olmalıdır. Olmursa, `npx expo start --go --tunnel` yoxla.
 
+### Windows-da `npm install` xəta verərsə (EPERM / spawn cmd.exe ENOENT)
+Səbəb: quraşdırma zamanı faylları başqa proqram tutur (Windows Defender, VS Code, başqa terminal).
+1. VS Code-u və `vibe-os` qovluğunda açıq olan bütün terminalları bağla.
+2. PowerShell-i yenidən aç və `vibe-os` qovluğuna keç.
+3. Yarımçıq qovluğu sil (alınmasa, kompüteri yenidən başlat və təkrarla):
+   ```bash
+   Remove-Item -Recurse -Force node_modules
+   ```
+4. Kilid faylına uyğun, əlavə skriptlər olmadan quraşdır:
+   ```bash
+   npm ci --ignore-scripts
+   ```
+5. Sonra həmişəki kimi:
+   ```bash
+   npx expo start --go
+   ```
+
 ### Yol B (Android, səs tanıma ilə)
 ```bash
 npm install -g eas-cli
