@@ -5,8 +5,10 @@ import React, { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '../components/Avatar';
+import { AgendaCard } from '../components/AgendaCard';
 import { EventRow } from '../components/rows';
 import { Card, IconButton, Screen, SectionHeader, T, tap, type IconName } from '../components/ui';
+import { buildAgenda } from '../lib/agenda';
 import { parseVoice } from '../lib/voiceParse';
 import { daysUntil } from '../notify/plan';
 import { useLicense } from '../license/useLicense';
@@ -29,14 +31,11 @@ export default function HomeScreen() {
   const currency = useAppStore((s) => s.settings.currency);
   const events = useAppStore((s) => s.events);
   const records = useAppStore((s) => s.records);
-  const newBookings = useAppStore((s) => s.bookings.filter((b) => b.status === 'new').length);
-  const pendingContracts = useAppStore((s) => s.contracts.filter((c) => c.status === 'sent' || (c.status === 'draft' && c.deadline)).length);
   const expiringDocs = useAppStore((s) => s.docs);
 
   const { read, write } = useRole();
   const lic = useLicense().state;
   const myId = useAppStore((s) => s.cloud.userId);
-  const myTasks = useAppStore((s) => s.tasks.filter((x) => !x.done && (!!myId && x.assigneeId === myId)).length);
   const today = toISODate(new Date());
   const [voiceOpen, setVoiceOpen] = useState(false);
   const onVoice = (text: string) => {
@@ -51,54 +50,58 @@ export default function HomeScreen() {
   const upcoming = useMemo(
     () =>
       events
-        .filter((e) => e.date >= today)
+        .filter((e) => e.date > today)
         .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time))
         .slice(0, 3),
     [events, today],
   );
 
-  const briefing = useMemo(() => {
-    const todayCount = events.filter((e) => e.date === today).length;
-    const weekCount = events.filter((e) => {
-      const d = daysBetween(today, e.date);
-      return d > 0 && d <= 7;
-    }).length;
-    const overdue = records.filter((r) => r.status === 'overdue').length;
-    const lines: { icon: IconName; text: string; color: string; onPress?: () => void }[] = [];
-    if (myTasks)
-      lines.push({
-        icon: 'checkbox',
-        text: t('home.briefingTasks', { count: myTasks }),
-        color: colors.success,
-        onPress: () => nav.navigate('Tasks'),
-      });
-    if (newBookings && read('bookings'))
-      lines.push({
-        icon: 'mail-unread',
-        text: t('home.briefingBookings', { count: newBookings }),
-        color: colors.gold,
-        onPress: () => nav.navigate('Tabs', { screen: 'Bookings' } as never),
-      });
-    if (todayCount) lines.push({ icon: 'flash', text: t('home.briefingEventsToday', { count: todayCount }), color: colors.gold });
-    if (weekCount) lines.push({ icon: 'calendar', text: t('home.briefingEventsWeek', { count: weekCount }), color: colors.violet });
-    const docsSoon = expiringDocs.filter((d) => d.expiry && daysUntil(d.expiry, today) <= 60).length;
-    if (pendingContracts && read('contracts'))
-      lines.push({
-        icon: 'document-text',
-        text: t('home.briefingContracts', { count: pendingContracts }),
-        color: colors.violet,
-        onPress: () => nav.navigate('Documents', { tab: 'contracts' }),
-      });
-    if (docsSoon)
-      lines.push({
-        icon: 'globe',
-        text: t('home.briefingDocs', { count: docsSoon }),
-        color: colors.warning,
-        onPress: () => nav.navigate('Documents', { tab: 'personal' }),
-      });
-    if (overdue && read('money')) lines.push({ icon: 'alert-circle', text: t('home.briefingOverdue', { count: overdue }), color: colors.danger });
-    return lines;
-  }, [events, records, today, t, newBookings, nav, pendingContracts, expiringDocs, myTasks, read]);
+  const tasks = useAppStore((s) => s.tasks);
+  const contracts = useAppStore((s) => s.contracts);
+  const bookings = useAppStore((s) => s.bookings);
+  const toggleTask = useAppStore((s) => s.toggleTask);
+  const { inTeam } = useRole();
+  const licensed = useLicense().canWrite;
+  const agenda = useMemo(
+    () =>
+      buildAgenda({
+        today,
+        events,
+        tasks,
+        records,
+        contracts,
+        bookings,
+        docs: expiringDocs,
+        can: { money: read('money'), contracts: read('contracts'), bookings: read('bookings') },
+        myUserId: myId,
+        inTeam,
+      }),
+    // read() depends only on role/licence, captured by inTeam/licensed
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [today, events, tasks, records, contracts, bookings, expiringDocs, myId, inTeam, licensed],
+  );
+  // open tasks assigned to me that are not already in today's list (future or no due date)
+  const laterTasks = tasks.filter(
+    (x) => !x.done && (inTeam ? !!myId && x.assigneeId === myId : true) && (!x.due || x.due > today),
+  ).length;
+  // still worth a line under today's plan (not already listed above)
+  const awaitingSignature = read('contracts')
+    ? contracts.filter((c) => (c.status === 'sent' || c.status === 'draft') && c.deadline && c.deadline > today).length
+    : 0;
+  const docsLater = expiringDocs.filter((d) => {
+    if (!d.expiry) return false;
+    const n = daysUntil(d.expiry, today);
+    return n > 30 && n <= 60;
+  }).length;
+  const weekCount = events.filter((e) => {
+    const d = daysBetween(today, e.date);
+    return d > 1 && d <= 7;
+  }).length;
+  const canTickTask = (id: string) => {
+    if (!licensed) return false;
+    const task = tasks.find((x) => x.id === id);
+    return !inTeam || write('tasks') || (!!myId && task?.assigneeId === myId);
+  };
 
   const sum = useMemo(() => summarize(records, currency, monthRange(today)), [records, currency, today]);
   const month = MONTHS[lang].nom[new Date().getMonth()];
@@ -155,28 +158,8 @@ export default function HomeScreen() {
         </Pressable>
       ) : null}
 
-      {/* Daily briefing */}
-      <Card style={styles.briefing}>
-        <View style={styles.rowCenter}>
-          <Ionicons name="sparkles" size={18} color={colors.gold} />
-          <T variant="label" color={colors.gold}>
-            {t('home.briefingTitle')}
-          </T>
-        </View>
-        {briefing.length === 0 ? (
-          <T>{t('home.briefingEmpty')}</T>
-        ) : (
-          briefing.map((b) => (
-            <Pressable key={b.text} style={styles.rowCenter} onPress={b.onPress} disabled={!b.onPress}>
-              <Ionicons name={b.icon} size={18} color={b.color} />
-              <T variant="bodyLg" style={{ flex: 1 }}>
-                {b.text}
-              </T>
-              {b.onPress ? <Ionicons name="chevron-forward" size={18} color={colors.textFaint} /> : null}
-            </Pressable>
-          ))
-        )}
-      </Card>
+      {/* Today: the full plan */}
+      <AgendaCard agenda={agenda} today={today} weekCount={weekCount} laterTasks={laterTasks} awaitingSignature={awaitingSignature} docsLater={docsLater} canTick={canTickTask} onTick={toggleTask} />
 
       {/* Voice: one sentence -> pre-filled form */}
       {write('events') ? (
@@ -310,7 +293,6 @@ function Stat({ label, value, color }: { label: string; value: string; color: st
 const styles = themed(() =>
   StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  briefing: { backgroundColor: colors.surfaceAlt, borderColor: colors.gold + '55' },
   rowCenter: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   quickRow: { flexDirection: 'row', gap: space.md },
   licence: {

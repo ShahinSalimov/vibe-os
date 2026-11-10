@@ -682,6 +682,15 @@ const ru = {
     graphite: { name: 'Графит', desc: 'Тёмно-серая с ярким оранжевым' },
     daylight: { name: 'День', desc: 'Чистая и светлая' },
   },
+  agenda: {
+    title: 'Сегодня · {{date}}',
+    payment: 'Оплата от {{name}}',
+    left: 'осталось {{amount}}',
+    overdue: 'просрочено',
+    dueToday: 'сегодня',
+    sign: 'Подписать: {{title}}',
+    tomorrow: 'Завтра',
+  },
   calendar: {
     pick: 'Выберите дату',
   },

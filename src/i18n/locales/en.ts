@@ -648,6 +648,15 @@ const en = {
     graphite: { name: 'Graphite', desc: 'Dark grey with bold orange' },
     daylight: { name: 'Daylight', desc: 'Clean and bright' },
   },
+  agenda: {
+    title: 'Today · {{date}}',
+    payment: 'Payment from {{name}}',
+    left: '{{amount}} left',
+    overdue: 'overdue',
+    dueToday: 'due today',
+    sign: 'Sign: {{title}}',
+    tomorrow: 'Tomorrow',
+  },
   calendar: {
     pick: 'Pick a date',
   },

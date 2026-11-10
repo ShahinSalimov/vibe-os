@@ -650,6 +650,15 @@ const az: Dictionary = {
     graphite: { name: 'Qrafit', desc: 'Tünd boz, cəsur narıncı' },
     daylight: { name: 'Gündüz', desc: 'Təmiz və işıqlı' },
   },
+  agenda: {
+    title: 'Bu gün · {{date}}',
+    payment: 'Ödəniş: {{name}}',
+    left: '{{amount}} qalıb',
+    overdue: 'gecikib',
+    dueToday: 'bu gün',
+    sign: 'İmzala: {{title}}',
+    tomorrow: 'Sabah',
+  },
   calendar: {
     pick: 'Tarix seçin',
   },

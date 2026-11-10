@@ -83,7 +83,7 @@ const SHOTS = process.argv[2];
   await p.reload(); await p.waitForTimeout(1500);
   await p.screenshot({ path: `${SHOTS}/d3-home.png` });
   const home = await p.locator('body').innerText();
-  console.log('3. home briefing: contract line:', home.includes('1 müqavilə imza gözləyir'), '| doc line:', home.includes('1 sənədin vaxtı 60 gün içində bitir'));
+  console.log('3. home briefing: contract line:', home.includes('İmzala: Toy mərasimində'), '| doc line:', home.includes('1 sənədin vaxtı 60 gün içində bitir'));
   await click('1 sənədin vaxtı 60 gün içində bitir'); await p.waitForTimeout(600);
   await p.screenshot({ path: `${SHOTS}/d4-personal.png` });
   console.log('   personal tab shows countdown:', /gün sonra bitir/.test(await p.locator('body').innerText()));
