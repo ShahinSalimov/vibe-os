@@ -183,3 +183,40 @@ test('contract/rider mapping: round-trip, no device file sent to cloud', () => {
   assert.deepEqual(mappers.riders.fromRow(mappers.riders.toRow(r, 'w')), r);
   assert.deepEqual(mappers.riders.fromRow({ ...mappers.riders.toRow(r, 'w'), sections: null }).sections, []);
 });
+
+import { canRead, canWrite, effectiveRole, pushableTables, readableTables, TABLE_AREA } from '../src/team/permissions';
+test('permissions mirror the database policies', () => {
+  assert.equal(canRead('member', 'money'), false);
+  assert.equal(canRead('accountant', 'money'), true);
+  assert.equal(canWrite('accountant', 'money'), true);
+  assert.equal(canWrite('accountant', 'contracts'), false);
+  assert.equal(canRead('accountant', 'contracts'), true);
+  assert.equal(canRead('member', 'bookings'), false);
+  assert.equal(canWrite('member', 'events'), false);
+  assert.equal(canRead('viewer', 'riders'), true);
+  assert.equal(canWrite('manager', 'team'), false);
+  assert.equal(canWrite('owner', 'team'), true);
+  const all = Object.keys(TABLE_AREA) as any[];
+  assert.deepEqual(pushableTables('member', all), []);
+  assert.deepEqual(pushableTables('accountant', all), ['money_records']);
+  assert.deepEqual(readableTables('member', all).sort(), ['contacts', 'events', 'riders', 'setlists', 'songs', 'tasks']);
+  assert.equal(effectiveRole(null, null), 'owner');
+  assert.equal(effectiveRole('member', null), 'owner', 'no workspace -> local owner');
+  assert.equal(effectiveRole('member', 'ws'), 'member');
+});
+
+import type { Task } from '../src/lib/types';
+test('task mapping and migration v5 (existing cloud users become owners)', () => {
+  const t: Task = { id: 'task-000001', title: 'Notlar', note: '', assigneeId: '', due: '', done: false, createdAt: '2026-11-01T00:00:00.000Z', updatedAt: '2026-11-01T00:00:00.000Z' };
+  const row = mappers.tasks.toRow(t, 'w');
+  assert.equal(row.assignee_id, null);
+  assert.equal(row.due, null);
+  assert.deepEqual(mappers.tasks.fromRow(row), t);
+  const withAll = { ...t, assigneeId: 'u1', due: '2026-12-01', eventId: 'ev1', done: true };
+  assert.deepEqual(mappers.tasks.fromRow(mappers.tasks.toRow(withAll, 'w')), withAll);
+  const v5 = migrateStore({ cloud: { workspaceId: 'ws1', email: 'a@b.az' } }, 4) as any;
+  assert.equal(v5.cloud.role, 'owner');
+  assert.deepEqual(v5.tasks, []);
+  const local = migrateStore({ cloud: { workspaceId: null } }, 4) as any;
+  assert.equal(local.cloud.role, null);
+});

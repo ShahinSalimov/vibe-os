@@ -3,6 +3,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useRole } from '../team/useRole';
 import { EventRow } from '../components/rows';
 import { EmptyState, IconButton, Screen, Segmented, T } from '../components/ui';
 import { toISODate } from '../lib/format';
@@ -14,6 +15,7 @@ export default function EventsScreen() {
   const { t } = useTranslation();
   const nav = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const events = useAppStore((s) => s.events);
+  const canAdd = useRole().write('events');
   const [tab, setTab] = useState<'upcoming' | 'past'>('upcoming');
   const today = toISODate(new Date());
 
@@ -29,15 +31,17 @@ export default function EventsScreen() {
     <Screen>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <T variant="h1">{t('events.title')}</T>
-        <IconButton icon="add" label={t('events.new')} color={colors.gold} onPress={() => nav.navigate('EventForm')} />
+        {canAdd ? (
+          <IconButton icon="add" label={t('events.new')} color={colors.gold} onPress={() => nav.navigate('EventForm')} />
+        ) : null}
       </View>
       {events.length === 0 ? (
         <EmptyState
           icon="calendar"
           title={t('events.empty')}
           body={t('events.emptyBody')}
-          action={t('events.new')}
-          onAction={() => nav.navigate('EventForm')}
+          action={canAdd ? t('events.new') : undefined}
+          onAction={canAdd ? () => nav.navigate('EventForm') : undefined}
         />
       ) : (
         <>

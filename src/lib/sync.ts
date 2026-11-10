@@ -1,6 +1,7 @@
 // Pure sync logic: row mapping (camelCase <-> snake_case) and last-write-wins merge.
 // No network code here, so it is fully unit-testable.
 import type {
+  Task,
   Contract,
   Rider,
   Setlist,
@@ -276,6 +277,32 @@ export const mappers = {
           }))
         : [],
       notes: String(r.notes ?? ''),
+      createdAt: String(r.created_at),
+      updatedAt: String(r.updated_at),
+    }),
+  },
+  tasks: {
+    toRow: (x: Task, ws: string): Row => ({
+      id: x.id,
+      workspace_id: ws,
+      title: x.title,
+      note: x.note,
+      assignee_id: x.assigneeId || null,
+      due: x.due || null,
+      event_id: x.eventId ?? null,
+      done: x.done,
+      created_at: x.createdAt,
+      updated_at: x.updatedAt,
+      deleted_at: null,
+    }),
+    fromRow: (r: Row): Task => ({
+      id: String(r.id),
+      title: String(r.title ?? ''),
+      note: String(r.note ?? ''),
+      assigneeId: r.assignee_id ? String(r.assignee_id) : '',
+      due: r.due ? String(r.due) : '',
+      ...(r.event_id ? { eventId: String(r.event_id) } : {}),
+      done: Boolean(r.done),
       createdAt: String(r.created_at),
       updatedAt: String(r.updated_at),
     }),

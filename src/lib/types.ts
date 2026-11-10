@@ -129,7 +129,7 @@ export interface Contact {
 }
 
 /** Entities that sync with the cloud. */
-export type SyncTable = 'events' | 'money_records' | 'booking_requests' | 'contacts' | 'songs' | 'setlists' | 'contracts' | 'riders';
+export type SyncTable = 'events' | 'money_records' | 'booking_requests' | 'contacts' | 'songs' | 'setlists' | 'contracts' | 'riders' | 'tasks';
 
 export interface Tombstone {
   table: SyncTable;
@@ -239,4 +239,27 @@ export interface PersonalDoc {
   fileUri?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+// ---------- Team ----------
+
+export interface Task {
+  id: string;
+  title: string;
+  note: string;
+  /** Cloud user id of the assignee; empty when not assigned. */
+  assigneeId: string;
+  due: ISODate | '';
+  eventId?: string;
+  done: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TeamMember {
+  userId: string;
+  role: 'owner' | 'manager' | 'member' | 'accountant' | 'viewer';
+  displayName: string;
+  email: string;
+  joinedAt: string;
 }

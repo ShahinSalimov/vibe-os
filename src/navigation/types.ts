@@ -20,6 +20,9 @@ export type RootStackParamList = {
   Contract: { id?: string; eventId?: string } | undefined;
   Rider: { kind: 'technical' | 'hospitality' };
   PersonalDoc: { id?: string } | undefined;
+  Team: undefined;
+  Tasks: undefined;
+  TaskForm: { id?: string; eventId?: string } | undefined;
 };
 
 export type TabParamList = {

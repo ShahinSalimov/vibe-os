@@ -16,6 +16,9 @@ import DocumentsScreen from '../screens/docs/DocumentsScreen';
 import PersonalDocScreen from '../screens/docs/PersonalDocScreen';
 import RiderScreen from '../screens/docs/RiderScreen';
 import EventFormScreen from '../screens/EventFormScreen';
+import { TaskFormScreen, TasksScreen } from '../screens/team/TasksScreens';
+import TeamScreen from '../screens/team/TeamScreen';
+import { useRole } from '../team/useRole';
 import EventsScreen from '../screens/EventsScreen';
 import HomeScreen from '../screens/HomeScreen';
 import MoneyScreen from '../screens/MoneyScreen';
@@ -58,6 +61,7 @@ function Tabs() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const newBookings = useAppStore((s) => s.bookings.filter((b) => b.status === 'new').length);
+  const { read } = useRole();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -81,12 +85,14 @@ function Tabs() {
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ title: t('tabs.home') }} />
       <Tab.Screen name="Events" component={EventsScreen} options={{ title: t('tabs.events') }} />
-      <Tab.Screen
-        name="Bookings"
-        component={BookingsScreen}
-        options={{ title: t('tabs.bookings'), tabBarBadge: newBookings || undefined }}
-      />
-      <Tab.Screen name="Money" component={MoneyScreen} options={{ title: t('tabs.money') }} />
+      {read('bookings') ? (
+        <Tab.Screen
+          name="Bookings"
+          component={BookingsScreen}
+          options={{ title: t('tabs.bookings'), tabBarBadge: newBookings || undefined }}
+        />
+      ) : null}
+      {read('money') ? <Tab.Screen name="Money" component={MoneyScreen} options={{ title: t('tabs.money') }} /> : null}
       <Tab.Screen name="More" component={MoreScreen} options={{ title: t('tabs.more') }} />
     </Tab.Navigator>
   );
@@ -118,6 +124,9 @@ export default function RootNavigator() {
             <Stack.Screen name="Account" component={AccountScreen} />
             <Stack.Screen name="Studio" component={StudioScreen} />
             <Stack.Screen name="Documents" component={DocumentsScreen} />
+            <Stack.Screen name="Team" component={TeamScreen} />
+            <Stack.Screen name="Tasks" component={TasksScreen} />
+            <Stack.Screen name="TaskForm" component={TaskFormScreen} options={{ presentation: 'modal' }} />
             <Stack.Screen name="Contract" component={ContractScreen} />
             <Stack.Screen name="Rider" component={RiderScreen} />
             <Stack.Screen name="PersonalDoc" component={PersonalDocScreen} options={{ presentation: 'modal' }} />

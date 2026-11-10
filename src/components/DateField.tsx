@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { formatDate, MONTHS, parseISODate, toISODate, WEEKDAYS } from '../lib/format';
 import type { ISODate, Language } from '../lib/types';
 import { colors, font, radius, space, TAP } from '../theme/tokens';
-import { Button, T, tap } from './ui';
+import { Button, T, tap, useReadOnly } from './ui';
 
 /**
  * Cross-platform date picker (identical on iOS, Android and web), localized
@@ -25,6 +25,7 @@ export function DateField({
   const { t, i18n } = useTranslation();
   const lang = i18n.language as Language;
   const [open, setOpen] = useState(false);
+  const locked = useReadOnly();
   const initial = parseISODate(value);
   const [cursor, setCursor] = useState({ y: initial.y, m: initial.m });
   const today = toISODate(new Date());
@@ -55,6 +56,7 @@ export function DateField({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`${label}: ${formatDate(value, lang)}`}
+        disabled={locked}
         onPress={() => {
           const p = parseISODate(value);
           setCursor({ y: p.y, m: p.m });
@@ -189,6 +191,7 @@ export function OptionalDateField({
   onChange: (d: ISODate | '') => void;
   addLabel: string;
 }) {
+  const locked = useReadOnly();
   if (!value) {
     return (
       <View style={{ gap: space.xs + 2 }}>
@@ -197,6 +200,7 @@ export function OptionalDateField({
         </T>
         <Pressable
           accessibilityRole="button"
+          disabled={locked}
           onPress={() => {
             tap();
             onChange(toISODate(new Date()));
@@ -217,6 +221,7 @@ export function OptionalDateField({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="clear"
+        disabled={locked}
         onPress={() => {
           tap();
           onChange('');

@@ -5,6 +5,8 @@ import { newId } from '../lib/id';
 import { emptyCloud, migrateStore } from './migrate';
 import { mergeRemote, mappers } from '../lib/sync';
 import type {
+  Task,
+  TeamMember,
   Contract,
   PersonalDoc,
   Rider,
@@ -49,6 +51,9 @@ interface AppState {
   docs: PersonalDoc[];
   /** Local reminders (notifications) switched on by the user. */
   reminders: boolean;
+  tasks: Task[];
+  /** Cached team list (from the cloud). */
+  members: TeamMember[];
 
   completeOnboarding: (profile: Omit<Profile, 'createdAt'>, settings: Settings) => void;
   updateSettings: (patch: Partial<Settings>) => void;
@@ -80,6 +85,12 @@ interface AppState {
   saveDoc: (d: Input<PersonalDoc>) => string;
   deleteDoc: (id: string) => string | null;
   setReminders: (on: boolean) => void;
+  saveTask: (t: Input<Task>) => string;
+  toggleTask: (id: string) => void;
+  deleteTask: (id: string) => void;
+  setMembers: (m: TeamMember[]) => void;
+  /** Clears all shared business data before switching to another (team) workspace. Profile, settings and device-only docs stay. */
+  resetWorkspaceData: () => void;
 
   // cloud
   setCloud: (patch: Partial<CloudState>) => void;
@@ -121,6 +132,8 @@ export const useAppStore = create<AppState>()(
       riders: [],
       docs: [],
       reminders: false,
+      tasks: [],
+      members: [],
 
       completeOnboarding: (profile, settings) => set({ profile: { ...profile, createdAt: now() }, settings }),
       updateSettings: (patch) => set((s) => ({ settings: { ...s.settings, ...patch } })),
@@ -139,6 +152,7 @@ export const useAppStore = create<AppState>()(
           bookings: s.bookings.map((b) => (b.eventId === id ? { ...b, eventId: undefined, updatedAt: now() } : b)),
           setlists: s.setlists.map((l) => (l.eventId === id ? { ...l, eventId: undefined, updatedAt: now() } : l)),
           contracts: s.contracts.map((c) => (c.eventId === id ? { ...c, eventId: undefined, updatedAt: now() } : c)),
+          tasks: s.tasks.map((x) => (x.eventId === id ? { ...x, eventId: undefined, updatedAt: now() } : x)),
           tombstones: [...s.tombstones, tomb('events', id)],
         })),
 
@@ -301,6 +315,31 @@ export const useAppStore = create<AppState>()(
         return d?.fileUri ?? null;
       },
       setReminders: (on) => set({ reminders: on }),
+      saveTask: (input) => {
+        const [tasks, id] = upsert(get().tasks, input);
+        set({ tasks });
+        return id;
+      },
+      toggleTask: (id) =>
+        set((s) => ({ tasks: s.tasks.map((x) => (x.id === id ? { ...x, done: !x.done, updatedAt: now() } : x)) })),
+      deleteTask: (id) =>
+        set((s) => ({ tasks: s.tasks.filter((x) => x.id !== id), tombstones: [...s.tombstones, tomb('tasks', id)] })),
+      setMembers: (members) => set({ members }),
+      resetWorkspaceData: () =>
+        set({
+          events: [],
+          records: [],
+          bookings: [],
+          contacts: [],
+          tombstones: [],
+          songs: [],
+          assets: [],
+          setlists: [],
+          contracts: [],
+          riders: [],
+          tasks: [],
+          members: [],
+        }),
 
       setCloud: (patch) => set((s) => ({ cloud: { ...s.cloud, ...patch } })),
 
@@ -321,6 +360,8 @@ export const useAppStore = create<AppState>()(
               return { setlists: mergeRemote(s.setlists, rows, mappers.setlists.fromRow) };
             case 'riders':
               return { riders: mergeRemote(s.riders, rows, mappers.riders.fromRow) };
+            case 'tasks':
+              return { tasks: mergeRemote(s.tasks, rows, mappers.tasks.fromRow) };
             case 'contracts': {
               // keep the device-only scan when a newer version arrives from the cloud
               const merged = mergeRemote(s.contracts, rows, mappers.contracts.fromRow);
@@ -353,11 +394,13 @@ export const useAppStore = create<AppState>()(
           riders: [],
           docs: [],
           reminders: false,
+          tasks: [],
+          members: [],
         }),
     }),
     {
       name: 'vibe-os-store',
-      version: 4,
+      version: 5,
       storage: createJSONStorage(() => AsyncStorage),
       partialize: ({
         profile,
@@ -375,7 +418,11 @@ export const useAppStore = create<AppState>()(
         riders,
         docs,
         reminders,
+        tasks,
+        members,
       }) => ({
+        tasks,
+        members,
         contracts,
         riders,
         docs,

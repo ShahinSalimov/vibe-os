@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useLayoutEffect, useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useRole } from '../team/useRole';
 import { DateField } from '../components/DateField';
 import { EVENT_ICONS } from '../components/rows';
 import { Banner, Button, Card, Chips, Field, Screen, T, tap } from '../components/ui';
@@ -16,6 +17,10 @@ import { colors, radius, space } from '../theme/tokens';
 
 export default function EventFormScreen({ route, navigation }: RootProps<'EventForm'>) {
   const { t, i18n } = useTranslation();
+  const role = useRole();
+  const ro = !role.write('events');
+  const canReadArea = { contracts: role.read('contracts') };
+  const canWriteArea = { contracts: role.write('contracts'), studio: role.write('studio') };
   const lang = i18n.language as Language;
   const id = route.params?.id;
   const events = useAppStore((s) => s.events);
@@ -127,7 +132,8 @@ export default function EventFormScreen({ route, navigation }: RootProps<'EventF
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Screen edges={['bottom']}>
+      <Screen edges={['bottom']} readOnly={ro}>
+        {ro ? <Banner icon="eye" text={t('readOnly')} /> : null}
         {draft ? <Banner icon="mic" text={t('voice.review')} /> : null}
         <Field
           voice
@@ -148,7 +154,8 @@ export default function EventFormScreen({ route, navigation }: RootProps<'EventF
                 <Pressable
                   key={ty}
                   accessibilityRole="radio"
-                  accessibilityState={{ selected: active }}
+                  accessibilityState={{ selected: active, disabled: ro }}
+                  disabled={ro}
                   onPress={() => {
                     tap();
                     setType(ty);
@@ -241,7 +248,8 @@ export default function EventFormScreen({ route, navigation }: RootProps<'EventF
           {feeNum > 0 && !linkedIncome ? (
             <Pressable
               accessibilityRole="checkbox"
-              accessibilityState={{ checked: addToMoney }}
+              accessibilityState={{ checked: addToMoney, disabled: ro }}
+              disabled={ro}
               onPress={() => {
                 tap();
                 setAddToMoney((v) => !v);
@@ -254,7 +262,7 @@ export default function EventFormScreen({ route, navigation }: RootProps<'EventF
           ) : null}
         </Card>
 
-        {existing ? (
+        {existing && (linkedContract ? canReadArea.contracts : canWriteArea.contracts) ? (
           <Button
             label={linkedContract ? `${t('events.createContract')}: ${t(`contracts.status.${linkedContract.status}`)}` : `${t('events.createContract')} +`}
             icon="document-text"
@@ -264,7 +272,7 @@ export default function EventFormScreen({ route, navigation }: RootProps<'EventF
             }
           />
         ) : null}
-        {existing ? (
+        {existing && (linkedSetlist || canWriteArea.studio) ? (
           <Button
             label={linkedSetlist ? `${t('events.setlist')}: ${linkedSetlist.title}` : `${t('events.setlist')} +`}
             icon="list"
@@ -286,8 +294,8 @@ export default function EventFormScreen({ route, navigation }: RootProps<'EventF
           maxLength={1000}
         />
 
-        <Button label={t('common.save')} icon="checkmark" onPress={save} />
-        {existing ? <Button label={t('common.delete')} icon="trash" variant="danger" onPress={remove} /> : null}
+        {ro ? null : (<Button label={t('common.save')} icon="checkmark" onPress={save} />)}
+        {existing && !ro ? <Button label={t('common.delete')} icon="trash" variant="danger" onPress={remove} /> : null}
       </Screen>
     </KeyboardAvoidingView>
   );

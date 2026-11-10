@@ -9,6 +9,7 @@ import { EventRow } from '../components/rows';
 import { Card, Screen, SectionHeader, T, tap, type IconName } from '../components/ui';
 import { parseVoice } from '../lib/voiceParse';
 import { daysUntil } from '../notify/plan';
+import { useRole } from '../team/useRole';
 import { VoiceSheet } from '../voice/VoiceSheet';
 import { monthRange, summarize } from '../lib/finance';
 import { daysBetween, formatMoney, MONTHS, toISODate } from '../lib/format';
@@ -31,6 +32,9 @@ export default function HomeScreen() {
   const pendingContracts = useAppStore((s) => s.contracts.filter((c) => c.status === 'sent' || (c.status === 'draft' && c.deadline)).length);
   const expiringDocs = useAppStore((s) => s.docs);
 
+  const { read, write } = useRole();
+  const myId = useAppStore((s) => s.cloud.userId);
+  const myTasks = useAppStore((s) => s.tasks.filter((x) => !x.done && (!!myId && x.assigneeId === myId)).length);
   const today = toISODate(new Date());
   const [voiceOpen, setVoiceOpen] = useState(false);
   const onVoice = (text: string) => {
@@ -59,7 +63,14 @@ export default function HomeScreen() {
     }).length;
     const overdue = records.filter((r) => r.status === 'overdue').length;
     const lines: { icon: IconName; text: string; color: string; onPress?: () => void }[] = [];
-    if (newBookings)
+    if (myTasks)
+      lines.push({
+        icon: 'checkbox',
+        text: t('home.briefingTasks', { count: myTasks }),
+        color: colors.success,
+        onPress: () => nav.navigate('Tasks'),
+      });
+    if (newBookings && read('bookings'))
       lines.push({
         icon: 'mail-unread',
         text: t('home.briefingBookings', { count: newBookings }),
@@ -69,7 +80,7 @@ export default function HomeScreen() {
     if (todayCount) lines.push({ icon: 'flash', text: t('home.briefingEventsToday', { count: todayCount }), color: colors.gold });
     if (weekCount) lines.push({ icon: 'calendar', text: t('home.briefingEventsWeek', { count: weekCount }), color: colors.violet });
     const docsSoon = expiringDocs.filter((d) => d.expiry && daysUntil(d.expiry, today) <= 60).length;
-    if (pendingContracts)
+    if (pendingContracts && read('contracts'))
       lines.push({
         icon: 'document-text',
         text: t('home.briefingContracts', { count: pendingContracts }),
@@ -83,9 +94,9 @@ export default function HomeScreen() {
         color: colors.warning,
         onPress: () => nav.navigate('Documents', { tab: 'personal' }),
       });
-    if (overdue) lines.push({ icon: 'alert-circle', text: t('home.briefingOverdue', { count: overdue }), color: colors.danger });
+    if (overdue && read('money')) lines.push({ icon: 'alert-circle', text: t('home.briefingOverdue', { count: overdue }), color: colors.danger });
     return lines;
-  }, [events, records, today, t, newBookings, nav, pendingContracts, expiringDocs]);
+  }, [events, records, today, t, newBookings, nav, pendingContracts, expiringDocs, myTasks, read]);
 
   const sum = useMemo(() => summarize(records, currency, monthRange(today)), [records, currency, today]);
   const month = MONTHS[lang].nom[new Date().getMonth()];
@@ -128,6 +139,7 @@ export default function HomeScreen() {
       </Card>
 
       {/* Voice: one sentence -> pre-filled form */}
+      {write('events') ? (
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t('voice.addByVoice')}
@@ -149,26 +161,34 @@ export default function HomeScreen() {
           </T>
         </View>
       </Pressable>
+      ) : null}
       <VoiceSheet visible={voiceOpen} mode="command" onClose={() => setVoiceOpen(false)} onResult={onVoice} />
 
       {/* Quick add */}
-      <View style={styles.quickRow}>
-        <QuickAction icon="calendar" label={t('home.addEvent')} onPress={() => nav.navigate('EventForm')} />
-        <QuickAction
-          icon="arrow-down"
-          label={t('home.addIncome')}
-          color={colors.success}
-          onPress={() => nav.navigate('RecordForm', { kind: 'income' })}
-        />
-        <QuickAction
-          icon="arrow-up"
-          label={t('home.addExpense')}
-          color={colors.danger}
-          onPress={() => nav.navigate('RecordForm', { kind: 'expense' })}
-        />
-      </View>
+      {write('events') ? (
+        <View style={styles.quickRow}>
+          <QuickAction icon="calendar" label={t('home.addEvent')} onPress={() => nav.navigate('EventForm')} />
+          {write('money') ? (
+            <>
+              <QuickAction
+                icon="arrow-down"
+                label={t('home.addIncome')}
+                color={colors.success}
+                onPress={() => nav.navigate('RecordForm', { kind: 'income' })}
+              />
+              <QuickAction
+                icon="arrow-up"
+                label={t('home.addExpense')}
+                color={colors.danger}
+                onPress={() => nav.navigate('RecordForm', { kind: 'expense' })}
+              />
+            </>
+          ) : null}
+        </View>
+      ) : null}
 
       {/* Month summary */}
+      {read('money') ? (
       <Card>
         <T variant="label">
           {t('home.thisMonth')} · {month}
@@ -189,6 +209,7 @@ export default function HomeScreen() {
           {t('home.otherCurrencies', { currency })}
         </T>
       </Card>
+      ) : null}
 
       <SectionHeader
         title={t('home.upcoming')}

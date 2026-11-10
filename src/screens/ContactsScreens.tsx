@@ -2,8 +2,9 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useLayoutEffect, useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useRole } from '../team/useRole';
 import { ContactActions } from '../components/booking';
-import { Button, Chips, EmptyState, Field, IconButton, Screen, T, tap, type IconName } from '../components/ui';
+import { Banner, Button, Chips, EmptyState, Field, IconButton, Screen, T, tap, type IconName } from '../components/ui';
 import { isEmail } from '../cloud/auth';
 import { confirmAction, notify } from '../lib/confirm';
 import { detectSensitiveIn, validPhone } from '../lib/sensitive';
@@ -91,6 +92,7 @@ export function ContactsScreen({ navigation }: RootProps<'Contacts'>) {
 
 export function ContactFormScreen({ route, navigation }: RootProps<'ContactForm'>) {
   const { t } = useTranslation();
+  const ro = !useRole().write('contacts');
   const id = route.params?.id;
   const existing = useAppStore((s) => (id ? s.contacts.find((c) => c.id === id) : undefined));
   const saveContact = useAppStore((s) => s.saveContact);
@@ -138,7 +140,8 @@ export function ContactFormScreen({ route, navigation }: RootProps<'ContactForm'
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Screen edges={['bottom']}>
+      <Screen edges={['bottom']} readOnly={ro}>
+        {ro ? <Banner icon="eye" text={t('readOnly')} /> : null}
         {existing ? <ContactActions phone={existing.phone} email={existing.email} /> : null}
         <Field label={t('contacts.fields.name')} value={name} onChangeText={setName} error={errors.name} maxLength={100} />
         <View style={{ gap: space.sm }}>
@@ -176,8 +179,8 @@ export function ContactFormScreen({ route, navigation }: RootProps<'ContactForm'
           multiline
           maxLength={500}
         />
-        <Button label={t('common.save')} icon="checkmark" onPress={save} />
-        {existing ? <Button label={t('common.delete')} icon="trash" variant="danger" onPress={remove} /> : null}
+        {ro ? null : (<Button label={t('common.save')} icon="checkmark" onPress={save} />)}
+        {existing && !ro ? <Button label={t('common.delete')} icon="trash" variant="danger" onPress={remove} /> : null}
       </Screen>
     </KeyboardAvoidingView>
   );

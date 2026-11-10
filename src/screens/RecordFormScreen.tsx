@@ -1,6 +1,7 @@
 import React, { useLayoutEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useRole } from '../team/useRole';
 import { DateField } from '../components/DateField';
 import { STATUS_COLORS } from '../components/rows';
 import { Banner, Button, Chips, Field, Screen, Segmented, T } from '../components/ui';
@@ -15,6 +16,7 @@ import { colors, space } from '../theme/tokens';
 
 export default function RecordFormScreen({ route, navigation }: RootProps<'RecordForm'>) {
   const { t, i18n } = useTranslation();
+  const ro = !useRole().write('money');
   const lang = i18n.language as Language;
   const id = route.params?.id;
   const records = useAppStore((s) => s.records);
@@ -93,7 +95,8 @@ export default function RecordFormScreen({ route, navigation }: RootProps<'Recor
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Screen edges={['bottom']}>
+      <Screen edges={['bottom']} readOnly={ro}>
+        {ro ? <Banner icon="eye" text={t('readOnly')} /> : null}
         {draft ? <Banner icon="mic" text={t('voice.review')} /> : <Banner text={t('money.recordOnly')} />}
         <Segmented
           value={kind}
@@ -187,8 +190,8 @@ export default function RecordFormScreen({ route, navigation }: RootProps<'Recor
           maxLength={500}
         />
 
-        <Button label={t('common.save')} icon="checkmark" onPress={save} />
-        {existing ? <Button label={t('common.delete')} icon="trash" variant="danger" onPress={remove} /> : null}
+        {ro ? null : (<Button label={t('common.save')} icon="checkmark" onPress={save} />)}
+        {existing && !ro ? <Button label={t('common.delete')} icon="trash" variant="danger" onPress={remove} /> : null}
       </Screen>
     </KeyboardAvoidingView>
   );

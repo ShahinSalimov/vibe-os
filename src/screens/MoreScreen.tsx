@@ -33,6 +33,8 @@ export default function MoreScreen() {
   const cloudEmail = useAppStore((s) => s.cloud.email);
   const contactsCount = useAppStore((s) => s.contacts.length);
   const songsCount = useAppStore((s) => s.songs.length);
+  const membersCount = useAppStore((s) => s.members.length);
+  const openTasks = useAppStore((s) => s.tasks.filter((x) => !x.done).length);
   const docsCount = useAppStore((s) => s.contracts.length + s.docs.length);
   const reminders = useAppStore((s) => s.reminders);
   const setReminders = useAppStore((s) => s.setReminders);
@@ -101,6 +103,18 @@ export default function MoreScreen() {
           label={t('more.studio')}
           value={songsCount ? String(songsCount) : ''}
           onPress={() => nav.navigate('Studio')}
+        />
+        <NavRow
+          icon="people-circle"
+          label={t('more.team')}
+          value={membersCount > 1 ? String(membersCount) : ''}
+          onPress={() => nav.navigate('Team')}
+        />
+        <NavRow
+          icon="checkbox"
+          label={t('more.tasks')}
+          value={openTasks ? String(openTasks) : ''}
+          onPress={() => nav.navigate('Tasks')}
         />
         <NavRow
           icon="document-text"

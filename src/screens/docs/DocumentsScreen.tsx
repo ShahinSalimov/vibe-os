@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useLayoutEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useRole } from '../../team/useRole';
 import { Banner, Button, Card, EmptyState, IconButton, Screen, Segmented, T, tap, type IconName } from '../../components/ui';
 import { formatDate, formatMoney, toISODate } from '../../lib/format';
 import type { ContractStatus, Language, PersonalDocKind, RiderKind } from '../../lib/types';
@@ -30,7 +31,8 @@ type Tab = 'contracts' | 'riders' | 'personal';
 export default function DocumentsScreen({ route, navigation }: RootProps<'Documents'>) {
   const { t, i18n } = useTranslation();
   const lang = i18n.language as Language;
-  const [tab, setTab] = useState<Tab>(route.params?.tab ?? 'contracts');
+  const { read, write } = useRole();
+  const [tab, setTab] = useState<Tab>(route.params?.tab ?? (read('contracts') ? 'contracts' : 'riders'));
   const contracts = useAppStore((s) => s.contracts);
   const riders = useAppStore((s) => s.riders);
   const docs = useAppStore((s) => s.docs);
@@ -41,7 +43,7 @@ export default function DocumentsScreen({ route, navigation }: RootProps<'Docume
     navigation.setOptions({
       title: t('docs.title'),
       headerRight: () =>
-        tab === 'riders' ? null : (
+        tab === 'riders' || (tab === 'contracts' && !write('contracts')) ? null : (
           <IconButton
             icon="add"
             color={colors.gold}
@@ -50,7 +52,7 @@ export default function DocumentsScreen({ route, navigation }: RootProps<'Docume
           />
         ),
     });
-  }, [navigation, t, tab]);
+  }, [navigation, t, tab, write]);
 
   return (
     <Screen edges={['bottom']}>
@@ -58,9 +60,9 @@ export default function DocumentsScreen({ route, navigation }: RootProps<'Docume
         value={tab}
         onChange={setTab}
         options={[
-          { value: 'contracts', label: t('docs.contracts') },
-          { value: 'riders', label: t('docs.riders') },
-          { value: 'personal', label: t('docs.personal') },
+          ...(read('contracts') ? [{ value: 'contracts' as const, label: t('docs.contracts') }] : []),
+          { value: 'riders' as const, label: t('docs.riders') },
+          { value: 'personal' as const, label: t('docs.personal') },
         ]}
       />
 

@@ -2,6 +2,7 @@ import * as ImagePicker from 'expo-image-picker';
 import React, { useLayoutEffect, useMemo, useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useRole } from '../../team/useRole';
 import { OptionalDateField } from '../../components/DateField';
 import { Banner, Button, Chips, Field, Screen, SectionHeader, T } from '../../components/ui';
 import { contractTitle, renderContract } from '../../docs/contractTemplates';
@@ -31,6 +32,7 @@ const TEMPLATE_FOR_EVENT: Partial<Record<EventType, ContractTemplate>> = { weddi
 
 export default function ContractScreen({ route, navigation }: RootProps<'Contract'>) {
   const { t, i18n: inst } = useTranslation();
+  const ro = !useRole().write('contracts');
   const uiLang = inst.language as Language;
   // Holds the id after the first save, so later saves update instead of creating duplicates.
   const [id, setId] = useState(route.params?.id);
@@ -165,7 +167,8 @@ export default function ContractScreen({ route, navigation }: RootProps<'Contrac
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Screen edges={['bottom']}>
+      <Screen edges={['bottom']} readOnly={ro}>
+        {ro ? <Banner icon="eye" text={t('readOnly')} /> : null}
         <Banner icon="information-circle" tone="warning" text={t('contracts.disclaimer')} />
 
         <View style={{ gap: space.sm }}>
@@ -250,15 +253,15 @@ export default function ContractScreen({ route, navigation }: RootProps<'Contrac
         ) : null}
 
         <Button label={t('contracts.pdf')} icon="share-outline" onPress={pdf} disabled={!body.trim()} />
-        <Button
+        {ro ? null : (<Button
           label={t('common.save')}
           icon="checkmark"
           variant="secondary"
           onPress={() => {
             if (persist()) navigation.goBack();
           }}
-        />
-        {existing ? <Button label={t('common.delete')} icon="trash" variant="danger" onPress={remove} /> : null}
+        />)}
+        {existing && !ro ? <Button label={t('common.delete')} icon="trash" variant="danger" onPress={remove} /> : null}
       </Screen>
     </KeyboardAvoidingView>
   );

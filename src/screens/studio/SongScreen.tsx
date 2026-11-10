@@ -12,6 +12,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useRole } from '../../team/useRole';
 import { Banner, Button, Card, Chips, Field, Screen, SectionHeader, T, tap } from '../../components/ui';
 import { confirmAction, notify } from '../../lib/confirm';
 import { detectSensitiveIn } from '../../lib/sensitive';
@@ -25,6 +26,7 @@ import { StageProgress } from './StudioScreen';
 
 export default function SongScreen({ route, navigation }: RootProps<'Song'>) {
   const { t } = useTranslation();
+  const ro = !useRole().write('studio');
   const [id, setId] = useState(route.params?.id);
   const existing = useAppStore((s) => (id ? s.songs.find((x) => x.id === id) : undefined));
   const saveSong = useAppStore((s) => s.saveSong);
@@ -92,7 +94,8 @@ export default function SongScreen({ route, navigation }: RootProps<'Song'>) {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Screen edges={['bottom']}>
+      <Screen edges={['bottom']} readOnly={ro}>
+        {ro ? <Banner icon="eye" text={t('readOnly')} /> : null}
         <Field
           voice
           label={t('studio.fields.title')}
@@ -177,8 +180,8 @@ export default function SongScreen({ route, navigation }: RootProps<'Song'>) {
           maxLength={1000}
         />
 
-        <Button label={t('common.save')} icon="checkmark" onPress={() => save(false)} />
-        {existing ? <Button label={t('common.delete')} icon="trash" variant="danger" onPress={remove} /> : null}
+        {ro ? null : (<Button label={t('common.save')} icon="checkmark" onPress={() => save(false)} />)}
+        {existing && !ro ? <Button label={t('common.delete')} icon="trash" variant="danger" onPress={remove} /> : null}
       </Screen>
     </KeyboardAvoidingView>
   );

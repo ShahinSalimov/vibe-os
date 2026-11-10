@@ -2,7 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useLayoutEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Button, Card, Chips, Field, Screen, T, tap } from '../../components/ui';
+import { useRole } from '../../team/useRole';
+import { Banner, Button, Card, Chips, Field, Screen, T, tap } from '../../components/ui';
 import { riderHtml } from '../../docs/html';
 import { defaultRiderSections, RIDER_TITLES } from '../../docs/riderDefaults';
 import { sharePdf } from '../../docs/share';
@@ -16,6 +17,7 @@ import { colors, font, radius, space } from '../../theme/tokens';
 
 export default function RiderScreen({ route, navigation }: RootProps<'Rider'>) {
   const { t, i18n } = useTranslation();
+  const ro = !useRole().write('riders');
   const kind = route.params.kind;
   const existing = useAppStore((s) => s.riders.find((r) => r.kind === kind));
   const profile = useAppStore((s) => s.profile);
@@ -88,7 +90,8 @@ export default function RiderScreen({ route, navigation }: RootProps<'Rider'>) {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Screen edges={['bottom']}>
+      <Screen edges={['bottom']} readOnly={ro}>
+        {ro ? <Banner icon="eye" text={t('readOnly')} /> : null}
         <View style={{ gap: space.sm }}>
           <T variant="caption">{t('riders.language')}</T>
           <Chips value={language} onChange={changeLanguage} options={LANGUAGES.map((l) => ({ value: l, label: t(`languages.${l}`) }))} />
@@ -103,12 +106,14 @@ export default function RiderScreen({ route, navigation }: RootProps<'Rider'>) {
                 placeholder={t('riders.sectionPlaceholder')}
                 placeholderTextColor={colors.textFaint}
                 style={styles.sectionTitle}
+                editable={!ro}
                 maxLength={60}
               />
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={t('riders.removeSection')}
                 hitSlop={10}
+                disabled={ro}
                 onPress={() => update((all) => all.filter((_, i) => i !== si))}
               >
                 <Ionicons name="trash-outline" size={20} color={colors.textFaint} />
@@ -123,6 +128,7 @@ export default function RiderScreen({ route, navigation }: RootProps<'Rider'>) {
                   placeholder={t('riders.itemPlaceholder')}
                   placeholderTextColor={colors.textFaint}
                   style={styles.item}
+                  editable={!ro}
                   multiline
                   maxLength={200}
                 />
@@ -130,6 +136,7 @@ export default function RiderScreen({ route, navigation }: RootProps<'Rider'>) {
                   accessibilityRole="button"
                   accessibilityLabel={t('common.delete')}
                   hitSlop={10}
+                  disabled={ro}
                   onPress={() => update((all) => ((all[si].items = all[si].items.filter((_, i) => i !== ii)), all))}
                 >
                   <Ionicons name="close" size={18} color={colors.textFaint} />
@@ -138,6 +145,7 @@ export default function RiderScreen({ route, navigation }: RootProps<'Rider'>) {
             ))}
             <Pressable
               accessibilityRole="button"
+              disabled={ro}
               onPress={() => {
                 tap();
                 update((all) => (all[si].items.push(''), all));
@@ -153,6 +161,7 @@ export default function RiderScreen({ route, navigation }: RootProps<'Rider'>) {
         ))}
 
         <Button
+          disabled={ro}
           label={t('riders.addSection')}
           icon="add"
           variant="secondary"
@@ -173,15 +182,15 @@ export default function RiderScreen({ route, navigation }: RootProps<'Rider'>) {
         />
 
         <Button label={t('riders.pdf')} icon="share-outline" onPress={pdf} />
-        <Button
+        {ro ? null : (<Button
           label={t('common.save')}
           icon="checkmark"
           variant={dirty ? 'primary' : 'secondary'}
           onPress={() => {
             if (persist()) navigation.goBack();
           }}
-        />
-        {existing ? <Button label={t('common.delete')} icon="trash" variant="danger" onPress={remove} /> : null}
+        />)}
+        {existing && !ro ? <Button label={t('common.delete')} icon="trash" variant="danger" onPress={remove} /> : null}
       </Screen>
     </KeyboardAvoidingView>
   );

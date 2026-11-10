@@ -2,7 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useLayoutEffect, useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Button, Card, Chips, Field, Screen, SectionHeader, T, tap } from '../../components/ui';
+import { useRole } from '../../team/useRole';
+import { Banner, Button, Card, Chips, Field, Screen, SectionHeader, T, tap } from '../../components/ui';
 import { confirmAction, notify } from '../../lib/confirm';
 import { formatDate, toISODate } from '../../lib/format';
 import { detectSensitiveIn } from '../../lib/sensitive';
@@ -14,6 +15,7 @@ import { colors, radius, space } from '../../theme/tokens';
 
 export default function SetlistScreen({ route, navigation }: RootProps<'Setlist'>) {
   const { t, i18n } = useTranslation();
+  const ro = !useRole().write('studio');
   const lang = i18n.language as Language;
   // Holds the id after the first save, so later saves update instead of creating duplicates.
   const [id, setId] = useState(route.params?.id);
@@ -73,7 +75,8 @@ export default function SetlistScreen({ route, navigation }: RootProps<'Setlist'
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Screen edges={['bottom']}>
+      <Screen edges={['bottom']} readOnly={ro}>
+        {ro ? <Banner icon="eye" text={t('readOnly')} /> : null}
         <Field
           label={t('studio.setlist.title')}
           value={title}
@@ -168,13 +171,13 @@ export default function SetlistScreen({ route, navigation }: RootProps<'Setlist'
           </View>
         )}
 
-        <Button
+        {ro ? null : (<Button
           label={t('common.save')}
           icon="checkmark"
           onPress={() => {
             if (persist()) navigation.goBack();
           }}
-        />
+        />)}
         {chosen.length ? (
           <Button
             label={t('studio.setlist.stageMode')}
@@ -186,7 +189,7 @@ export default function SetlistScreen({ route, navigation }: RootProps<'Setlist'
             }}
           />
         ) : null}
-        {existing ? <Button label={t('common.delete')} icon="trash" variant="danger" onPress={remove} /> : null}
+        {existing && !ro ? <Button label={t('common.delete')} icon="trash" variant="danger" onPress={remove} /> : null}
       </Screen>
     </KeyboardAvoidingView>
   );

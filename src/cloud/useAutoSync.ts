@@ -34,6 +34,7 @@ export function useAutoSync() {
         s.setlists !== prev.setlists ||
         s.contracts !== prev.contracts ||
         s.riders !== prev.riders ||
+        s.tasks !== prev.tasks ||
         s.tombstones !== prev.tombstones
       ) {
         schedule();

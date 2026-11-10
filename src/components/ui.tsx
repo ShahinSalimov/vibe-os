@@ -21,6 +21,10 @@ import { VoiceSheet } from '../voice/VoiceSheet';
 
 export type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
+/** When true, inputs, chips and date pickers below are locked (buttons still work). */
+export const ReadOnlyContext = React.createContext(false);
+export const useReadOnly = () => React.useContext(ReadOnlyContext);
+
 export function tap() {
   if (Platform.OS !== 'web') Haptics.selectionAsync().catch(() => {});
 }
@@ -32,13 +36,16 @@ export function Screen({
   scroll = true,
   edges = ['top'],
   contentStyle,
+  readOnly = false,
 }: {
   children: React.ReactNode;
   scroll?: boolean;
   edges?: Edge[];
   contentStyle?: StyleProp<ViewStyle>;
+  readOnly?: boolean;
 }) {
   return (
+    <ReadOnlyContext.Provider value={readOnly}>
     <SafeAreaView style={styles.screen} edges={edges}>
       {scroll ? (
         <ScrollView
@@ -52,6 +59,7 @@ export function Screen({
         <View style={[styles.screenContent, { flex: 1 }, contentStyle]}>{children}</View>
       )}
     </SafeAreaView>
+    </ReadOnlyContext.Provider>
   );
 }
 
@@ -198,6 +206,7 @@ export function Field({
   voice?: boolean;
 }) {
   const [listening, setListening] = React.useState(false);
+  const locked = useReadOnly() || input.editable === false;
   const appendVoice = (text: string) => {
     setListening(false);
     const cur = (input.value ?? '').trim();
@@ -214,6 +223,7 @@ export function Field({
           placeholderTextColor={colors.textFaint}
           selectionColor={colors.gold}
           {...input}
+          editable={!locked}
           style={[
             styles.input,
             input.multiline && styles.inputMultiline,
@@ -222,7 +232,7 @@ export function Field({
             input.style,
           ]}
         />
-        {voice ? (
+        {voice && !locked ? (
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={`${label}: mic`}
@@ -264,18 +274,20 @@ export function Chips<V extends string>({
   onChange: (v: V) => void;
   wrap?: boolean;
 }) {
+  const locked = useReadOnly();
   const content = options.map((o) => {
     const active = o.value === value;
     return (
       <Pressable
         key={o.value}
         accessibilityRole="radio"
-        accessibilityState={{ selected: active }}
+        accessibilityState={{ selected: active, disabled: locked }}
+        disabled={locked}
         onPress={() => {
           tap();
           onChange(o.value);
         }}
-        style={[styles.chip, active && styles.chipActive]}
+        style={[styles.chip, active && styles.chipActive, locked && !active && { opacity: 0.5 }]}
       >
         {o.icon ? <Ionicons name={o.icon} size={18} color={active ? colors.onGold : colors.textMuted} /> : null}
         <Text style={[styles.chipText, active && { color: colors.onGold }]}>{o.label}</Text>

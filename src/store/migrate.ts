@@ -6,7 +6,11 @@ export interface CloudState {
   slug: string | null;
   lastPushAt: string | null;
   /** Per-table pull cursor (server synced_at). */
-  pullCursors: Partial<Record<'events' | 'money_records' | 'booking_requests' | 'contacts' | 'songs' | 'setlists' | 'contracts' | 'riders', string>>;
+  pullCursors: Partial<Record<'events' | 'money_records' | 'booking_requests' | 'contacts' | 'songs' | 'setlists' | 'contracts' | 'riders' | 'tasks', string>>;
+  /** Role in the cloud workspace; null = not signed in (local owner). */
+  role: 'owner' | 'manager' | 'member' | 'accountant' | 'viewer' | null;
+  /** Cloud user id (to recognise "my" tasks). */
+  userId: string | null;
   lastSyncAt: string | null;
 }
 
@@ -17,14 +21,22 @@ export const emptyCloud: CloudState = {
   lastPushAt: null,
   pullCursors: {},
   lastSyncAt: null,
+  role: null,
+  userId: null,
 };
 
-/** v1 -> v2: updatedAt, bookings, contacts, tombstones, cloud. v2 -> v3: studio (songs, assets, setlists). v3 -> v4: contracts, riders, personal docs, reminders flag. */
+/** v1 -> v2: updatedAt, bookings, contacts, tombstones, cloud. v2 -> v3: studio (songs, assets, setlists). v3 -> v4: contracts, riders, personal docs, reminders flag. v4 -> v5: tasks, team members, cloud role. */
 export function migrateStore(state: Record<string, unknown>, version: number): Record<string, unknown> {
   let out = state;
   if (version < 2) out = migrateV1(out);
   if (version < 3) out = { ...out, songs: [], assets: [], setlists: [] };
   if (version < 4) out = { ...out, contracts: [], riders: [], docs: [], reminders: false };
+  if (version < 5) {
+    const cloud = { ...emptyCloud, ...((out.cloud as object) ?? {}) };
+    // existing signed-in users created their own workspace -> they are its owner
+    if (cloud.workspaceId && !cloud.role) cloud.role = 'owner';
+    out = { ...out, tasks: [], members: [], cloud };
+  }
   return out;
 }
 

@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useLayoutEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useRole } from '../../team/useRole';
 import { EmptyState, Field, IconButton, Screen, Segmented, T, tap } from '../../components/ui';
 import { SONG_STAGES, type SongStage } from '../../lib/types';
 import type { RootProps } from '../../navigation/types';
@@ -37,13 +38,15 @@ export default function StudioScreen({ route, navigation }: RootProps<'Studio'>)
   const setlists = useAppStore((s) => s.setlists);
   const assets = useAppStore((s) => s.assets);
   const events = useAppStore((s) => s.events);
+  const canAdd = useRole().write('studio');
   const [tab, setTab] = useState<'songs' | 'setlists'>(route.params?.tab ?? 'songs');
   const [query, setQuery] = useState('');
 
   useLayoutEffect(() => {
     navigation.setOptions({
       title: t('studio.title'),
-      headerRight: () => (
+      headerRight: () =>
+        !canAdd ? null : (
         <IconButton
           icon="add"
           color={colors.gold}
@@ -52,7 +55,7 @@ export default function StudioScreen({ route, navigation }: RootProps<'Studio'>)
         />
       ),
     });
-  }, [navigation, t, tab]);
+  }, [navigation, t, tab, canAdd]);
 
   const songList = useMemo(() => {
     const q = query.trim().toLowerCase();

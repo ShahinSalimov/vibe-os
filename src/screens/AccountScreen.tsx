@@ -24,6 +24,8 @@ export function syncErrorText(t: TFunction, r: SyncResult): string | null {
       return t('account.errors.payment');
     case 'not_configured':
       return t('account.notConfigured');
+    case 'removed':
+      return t('team.removed');
     default:
       return t('account.errors.generic', { msg: r.error });
   }
