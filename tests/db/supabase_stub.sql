@@ -1,6 +1,6 @@
 -- Minimal stand-in for Supabase's auth schema and API roles, for local testing only.
 create schema auth;
-create table auth.users (id uuid primary key);
+create table auth.users (id uuid primary key, email text);
 create function auth.uid() returns uuid language sql stable as $$
   select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
 $$;

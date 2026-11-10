@@ -4,12 +4,19 @@
 \set QUIET on
 
 create or replace function pg_temp.expect_error(sql text, fragment text) returns void language plpgsql as $$
+declare failed boolean := false;
 begin
-  execute sql;
-  raise exception 'EXPECTED ERROR containing "%" but statement succeeded: %', fragment, sql;
-exception when others then
-  if position(fragment in sqlerrm) = 0 and position(fragment in coalesce(sqlstate, '')) = 0 then
-    raise exception 'EXPECTED "%" got "%" for: %', fragment, sqlerrm, sql;
+  begin
+    execute sql;
+  exception when others then
+    failed := true;
+    if position(fragment in sqlerrm) = 0 and position(fragment in coalesce(sqlstate, '')) = 0 then
+      raise exception 'EXPECTED "%" got "%" for: %', fragment, sqlerrm, sql;
+    end if;
+  end;
+  -- raised outside the handler above, so it can never be mistaken for the expected error
+  if not failed then
+    raise exception 'STATEMENT SUCCEEDED but should have failed (%): %', fragment, sql;
   end if;
 end $$;
 grant execute on function pg_temp.expect_error(text, text) to anon, authenticated;
@@ -208,4 +215,68 @@ reset role;
 select pg_temp.ok((select title = 'Texniki rider' from public.riders where id = 'rdr-aysel-001'), 'musician must not edit rider');
 select pg_temp.ok((select title = 'Toy müqaviləsi' from public.contracts where id = 'ctr-aysel-001'), 'accountant must not edit contract');
 \echo PASS 12 contracts (finance audience, read-only for accountant) and riders (team reads)
+-- ---------- 13. team: invites, roles, owner protection, tasks ----------
+insert into auth.users values ('00000000-0000-0000-0000-0000000000d1', 'manager@x.az'), ('00000000-0000-0000-0000-0000000000d2', 'drummer@x.az');
+update auth.users set email = 'aysel@x.az' where id = '00000000-0000-0000-0000-0000000000a1';
+set role authenticated;
+select pg_temp.login('00000000-0000-0000-0000-0000000000a1');
+select public.create_invite(:'wsa_create_workspace', 'manager') as code_mgr \gset
+select public.create_invite(:'wsa_create_workspace', 'member') as code_mem \gset
+select pg_temp.ok(:'code_mgr' ~ '^[A-HJ-NP-Z2-9]{8}$', 'code format');
+select pg_temp.expect_error(format($q$select public.create_invite('%s', 'owner')$q$, :'wsa_create_workspace'), 'invalid_role');
+-- non-owner cannot create invites
+select pg_temp.login('00000000-0000-0000-0000-00000000000e');
+select pg_temp.expect_error(format($q$select public.create_invite('%s', 'manager')$q$, :'wsa_create_workspace'), 'not_owner');
+select pg_temp.ok((select count(*) = 0 from public.invites), 'musician cannot list invites');
+-- manager accepts (lowercase + dash accepted)
+select pg_temp.login('00000000-0000-0000-0000-0000000000d1');
+select pg_temp.ok((select public.accept_invite(lower(substr(:'code_mgr',1,4) || '-' || substr(:'code_mgr',5)), 'Elnur')) = :'wsa_create_workspace'::uuid, 'accept returns workspace');
+select pg_temp.expect_error(format($q$select public.accept_invite('%s')$q$, :'code_mgr'), 'invite_used');
+select pg_temp.expect_error($q$select public.accept_invite('ZZZZZZZZ')$q$, 'invite_not_found');
+select pg_temp.ok((select count(*) = 1 from public.money_records), 'manager sees money');
+select pg_temp.ok((select count(*) >= 1 from public.booking_requests where source = 'link'), 'manager sees bookings');
+select pg_temp.ok((select count(*) >= 4 from public.team_members(:'wsa_create_workspace')), 'manager sees team');
+select pg_temp.ok((select display_name = 'Elnur' and email = 'manager@x.az' from public.team_members(:'wsa_create_workspace') where user_id = '00000000-0000-0000-0000-0000000000d1'), 'name + email');
+-- manager cannot create invites or change roles
+select pg_temp.expect_error(format($q$select public.create_invite('%s', 'member')$q$, :'wsa_create_workspace'), 'not_owner');
+update public.workspace_members set role = 'manager' where user_id = '00000000-0000-0000-0000-00000000000e';
+-- expired invite
+reset role;
+update public.invites set expires_at = now() - interval '1 minute' where code = :'code_mem';
+set role authenticated;
+select pg_temp.login('00000000-0000-0000-0000-0000000000d2');
+select pg_temp.expect_error(format($q$select public.accept_invite('%s')$q$, :'code_mem'), 'invite_expired');
+select pg_temp.ok((select count(*) = 0 from public.team_members(:'wsa_create_workspace')), 'outsider sees no team');
+-- owner protection
+select pg_temp.login('00000000-0000-0000-0000-0000000000a1');
+select pg_temp.expect_error($q$update public.workspace_members set role = 'manager' where user_id = '00000000-0000-0000-0000-0000000000a1'$q$, 'owner_protected');
+select pg_temp.expect_error($q$delete from public.workspace_members where user_id = '00000000-0000-0000-0000-0000000000a1'$q$, 'owner_protected');
+select pg_temp.expect_error($q$update public.workspace_members set role = 'owner' where user_id = '00000000-0000-0000-0000-0000000000d1'$q$, 'owner_protected');
+update public.workspace_members set role = 'accountant' where user_id = '00000000-0000-0000-0000-0000000000d1';
+update public.workspace_members set role = 'manager' where user_id = '00000000-0000-0000-0000-0000000000d1';
+reset role;
+select pg_temp.ok((select role = 'member' from public.workspace_members where user_id = '00000000-0000-0000-0000-00000000000e'), 'manager could not change roles');
+select pg_temp.ok((select role = 'manager' from public.workspace_members where user_id = '00000000-0000-0000-0000-0000000000d1'), 'owner changes roles');
+-- tasks
+set role authenticated;
+select pg_temp.login('00000000-0000-0000-0000-0000000000d1'); -- manager creates a task for the musician
+insert into public.tasks (id, workspace_id, title, assignee_id, due) values ('task-0000001', :'wsa_create_workspace', 'Notları hazırla', '00000000-0000-0000-0000-00000000000e', current_date + 3);
+insert into public.tasks (id, workspace_id, title) values ('task-0000002', :'wsa_create_workspace', 'Menecerin işi');
+select pg_temp.login('00000000-0000-0000-0000-00000000000e'); -- musician
+select pg_temp.ok((select count(*) = 2 from public.tasks), 'musician sees team tasks');
+update public.tasks set done = true, updated_at = now() + interval '1 second' where id = 'task-0000001';
+select pg_temp.expect_error($q$update public.tasks set title = 'hack', updated_at = now() + interval '2 second' where id = 'task-0000001'$q$, 'assignee_can_only_change_done');
+update public.tasks set done = true where id = 'task-0000002';
+select pg_temp.expect_error(format($q$insert into public.tasks (id, workspace_id, title) values ('task-0000003', '%s', 'x')$q$, :'wsa_create_workspace'), 'row-level security');
+reset role;
+select pg_temp.ok((select done from public.tasks where id = 'task-0000001'), 'assignee ticked done');
+select pg_temp.ok((select not done from public.tasks where id = 'task-0000002'), 'not assignee: cannot tick');
+-- owner removes a member
+set role authenticated;
+select pg_temp.login('00000000-0000-0000-0000-0000000000a1');
+delete from public.workspace_members where user_id = '00000000-0000-0000-0000-00000000000e';
+select pg_temp.login('00000000-0000-0000-0000-00000000000e');
+select pg_temp.ok((select count(*) = 0 from public.tasks) and (select count(*) = 0 from public.events), 'removed member loses access');
+reset role;
+\echo PASS 13 team: one-time invites, owner-only management, owner protected, task permissions, removal
 \echo ALL DATABASE TESTS PASSED
