@@ -3,6 +3,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useRole } from '../team/useRole';
 import { RecordRow } from '../components/rows';
 import { Banner, Button, Card, EmptyState, Screen, Segmented, SectionHeader, T } from '../components/ui';
 import { balancesByCounterparty } from '../lib/finance';
@@ -17,6 +18,7 @@ export default function MoneyScreen() {
   const lang = i18n.language as Language;
   const nav = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const records = useAppStore((s) => s.records);
+  const canAdd = useRole().write('money');
   const [filter, setFilter] = useState<'all' | TxKind>('all');
 
   const list = useMemo(
@@ -32,6 +34,7 @@ export default function MoneyScreen() {
     <Screen>
       <T variant="h1">{t('money.title')}</T>
       <Banner text={t('money.recordOnly')} />
+      {canAdd ? (
       <View style={styles.actions}>
         <Button
           label={t('money.income')}
@@ -48,6 +51,7 @@ export default function MoneyScreen() {
           onPress={() => nav.navigate('RecordForm', { kind: 'expense' })}
         />
       </View>
+      ) : null}
 
       {records.length === 0 ? (
         <EmptyState icon="wallet" title={t('money.empty')} body={t('money.emptyBody')} />

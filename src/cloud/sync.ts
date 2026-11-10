@@ -119,6 +119,18 @@ export async function refreshMembers(sb: SupabaseClient, ws: string): Promise<vo
   useAppStore.getState().setMembers(members);
 }
 
+export async function refreshLicense(sb: SupabaseClient, ws: string): Promise<void> {
+  const { data, error } = await sb.from('licenses').select('status, trial_ends_at, activated_at').eq('workspace_id', ws).maybeSingle();
+  if (error || !data) return;
+  useAppStore.getState().setCloud({
+    license: {
+      status: data.status as 'trial' | 'active' | 'suspended',
+      trialEndsAt: String(data.trial_ends_at),
+      activatedAt: data.activated_at ? String(data.activated_at) : null,
+    },
+  });
+}
+
 async function doSync(): Promise<SyncResult> {
   const sb = getClient();
   if (!sb) return { ok: false, error: 'not_configured' };
@@ -190,11 +202,18 @@ async function doSync(): Promise<SyncResult> {
     }
 
     await refreshMembers(sb, ws.id);
+    await refreshLicense(sb, ws.id);
     useAppStore.getState().setCloud({ lastPushAt: pushStartedAt, pullCursors: cursors, lastSyncAt: new Date().toISOString() });
     return { ok: true, pulled, pushed };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String((e as { message?: string })?.message ?? e);
     if (msg.includes('payment_data_not_allowed')) return { ok: false, error: 'payment_data' };
+    if (msg.includes('license_required')) {
+      // licence ended while offline: refresh so the app shows the right state
+      const ws = useAppStore.getState().cloud.workspaceId;
+      if (ws) await refreshLicense(sb, ws).catch(() => {});
+      return { ok: false, error: 'license_required' };
+    }
     if (/fetch|network/i.test(msg)) return { ok: false, error: 'network' };
     return { ok: false, error: msg };
   }

@@ -5,6 +5,7 @@ import * as Clipboard from 'expo-clipboard';
 import React, { useMemo, useState } from 'react';
 import { Share, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useRole } from '../team/useRole';
 import { BookingRow } from '../components/booking';
 import { Button, Card, EmptyState, IconButton, Screen, Segmented, T } from '../components/ui';
 import { bookingLink, isCloudConfigured } from '../cloud/config';
@@ -18,6 +19,7 @@ export default function BookingsScreen() {
   const { t } = useTranslation();
   const nav = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const bookings = useAppStore((s) => s.bookings);
+  const canAdd = useRole().write('bookings');
   const slug = useAppStore((s) => s.cloud.slug);
   const signedIn = useAppStore((s) => !!s.cloud.email);
   const stageName = useAppStore((s) => s.profile?.stageName ?? '');
@@ -58,7 +60,9 @@ export default function BookingsScreen() {
     <Screen>
       <View style={styles.header}>
         <T variant="h1">{t('bookings.title')}</T>
-        <IconButton icon="add" label={t('bookings.new')} color={colors.gold} onPress={() => nav.navigate('BookingForm')} />
+        {canAdd ? (
+          <IconButton icon="add" label={t('bookings.new')} color={colors.gold} onPress={() => nav.navigate('BookingForm')} />
+        ) : null}
       </View>
 
       {/* Booking link card */}
@@ -103,8 +107,8 @@ export default function BookingsScreen() {
           icon="mail-unread"
           title={t('bookings.empty')}
           body={t('bookings.emptyBody')}
-          action={t('bookings.new')}
-          onAction={() => nav.navigate('BookingForm')}
+          action={canAdd ? t('bookings.new') : undefined}
+          onAction={canAdd ? () => nav.navigate('BookingForm') : undefined}
         />
       ) : (
         <>

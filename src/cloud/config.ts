@@ -11,3 +11,6 @@ export function bookingLink(slug: string | null): string | null {
   const sep = BOOKING_PAGE_URL.includes('?') ? '&' : '?';
   return `${BOOKING_PAGE_URL}${sep}a=${encodeURIComponent(slug)}`;
 }
+
+/** Where customers buy an activation code (e.g. https://instagram.com/yourpage). Shown on the licence screen. */
+export const SELLER_CONTACT_URL = process.env.EXPO_PUBLIC_SELLER_CONTACT_URL ?? '';

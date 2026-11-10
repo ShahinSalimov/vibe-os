@@ -12,6 +12,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { ReadOnlyBanner } from '../../license/ReadOnlyBanner';
 import { useRole } from '../../team/useRole';
 import { Banner, Button, Card, Chips, Field, Screen, SectionHeader, T, tap } from '../../components/ui';
 import { confirmAction, notify } from '../../lib/confirm';
@@ -95,7 +96,7 @@ export default function SongScreen({ route, navigation }: RootProps<'Song'>) {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Screen edges={['bottom']} readOnly={ro}>
-        {ro ? <Banner icon="eye" text={t('readOnly')} /> : null}
+        {ro ? <ReadOnlyBanner /> : null}
         <Field
           voice
           label={t('studio.fields.title')}

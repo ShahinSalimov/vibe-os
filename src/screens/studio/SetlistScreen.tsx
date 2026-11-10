@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useLayoutEffect, useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { ReadOnlyBanner } from '../../license/ReadOnlyBanner';
 import { useRole } from '../../team/useRole';
 import { Banner, Button, Card, Chips, Field, Screen, SectionHeader, T, tap } from '../../components/ui';
 import { confirmAction, notify } from '../../lib/confirm';
@@ -76,7 +77,7 @@ export default function SetlistScreen({ route, navigation }: RootProps<'Setlist'
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Screen edges={['bottom']} readOnly={ro}>
-        {ro ? <Banner icon="eye" text={t('readOnly')} /> : null}
+        {ro ? <ReadOnlyBanner /> : null}
         <Field
           label={t('studio.setlist.title')}
           value={title}

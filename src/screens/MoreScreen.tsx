@@ -13,6 +13,7 @@ import { Button, Card, Chips, Screen, SectionHeader, T, type IconName } from '..
 import { confirmAction, notify } from '../lib/confirm';
 import { currencySymbol } from '../lib/format';
 import { CURRENCIES, LANGUAGES, type Language } from '../lib/types';
+import { useLicense } from '../license/useLicense';
 import { requestReminderPermission } from '../notify/scheduler';
 import { useAppStore } from '../store/useAppStore';
 import { colors, space } from '../theme/tokens';
@@ -34,6 +35,7 @@ export default function MoreScreen() {
   const contactsCount = useAppStore((s) => s.contacts.length);
   const songsCount = useAppStore((s) => s.songs.length);
   const membersCount = useAppStore((s) => s.members.length);
+  const lic = useLicense().state;
   const openTasks = useAppStore((s) => s.tasks.filter((x) => !x.done).length);
   const docsCount = useAppStore((s) => s.contracts.length + s.docs.length);
   const reminders = useAppStore((s) => s.reminders);
@@ -103,6 +105,13 @@ export default function MoreScreen() {
           label={t('more.studio')}
           value={songsCount ? String(songsCount) : ''}
           onPress={() => nav.navigate('Studio')}
+        />
+        <NavRow
+          icon="key"
+          iconColor={lic.kind === 'expired' || lic.kind === 'suspended' ? colors.danger : colors.success}
+          label={t('more.license')}
+          value={lic.kind === 'active' ? '✓' : lic.kind === 'trial' ? t('license.trialDays', { count: lic.daysLeft }).replace(/^[^:]*:\s*/, '') : ''}
+          onPress={() => nav.navigate('License')}
         />
         <NavRow
           icon="people-circle"

@@ -9,6 +9,7 @@ import { EventRow } from '../components/rows';
 import { Card, Screen, SectionHeader, T, tap, type IconName } from '../components/ui';
 import { parseVoice } from '../lib/voiceParse';
 import { daysUntil } from '../notify/plan';
+import { useLicense } from '../license/useLicense';
 import { useRole } from '../team/useRole';
 import { VoiceSheet } from '../voice/VoiceSheet';
 import { monthRange, summarize } from '../lib/finance';
@@ -33,6 +34,7 @@ export default function HomeScreen() {
   const expiringDocs = useAppStore((s) => s.docs);
 
   const { read, write } = useRole();
+  const lic = useLicense().state;
   const myId = useAppStore((s) => s.cloud.userId);
   const myTasks = useAppStore((s) => s.tasks.filter((x) => !x.done && (!!myId && x.assigneeId === myId)).length);
   const today = toISODate(new Date());
@@ -114,6 +116,31 @@ export default function HomeScreen() {
           <Avatar name={profile?.stageName} uri={profile?.photoUri} size={48} />
         </Pressable>
       </View>
+
+      {lic.kind === 'trial' || lic.kind === 'expired' || lic.kind === 'suspended' ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => {
+            tap();
+            nav.navigate('License');
+          }}
+          style={[styles.licence, lic.kind !== 'trial' && { backgroundColor: colors.dangerSoft, borderColor: colors.danger + '55' }]}
+        >
+          <Ionicons name={lic.kind === 'trial' ? 'hourglass' : 'lock-closed'} size={18} color={lic.kind === 'trial' ? colors.gold : colors.danger} />
+          <T variant="bodyLg" style={{ flex: 1 }}>
+            {lic.kind === 'trial'
+              ? lic.daysLeft > 1
+                ? t('license.trialDays', { count: lic.daysLeft })
+                : t('license.trialHours', { count: lic.hoursLeft })
+              : lic.kind === 'expired'
+                ? t('license.expiredTitle')
+                : t('license.suspendedTitle')}
+          </T>
+          <T variant="caption" color={colors.gold}>
+            {t('license.activate')}
+          </T>
+        </Pressable>
+      ) : null}
 
       {/* Daily briefing */}
       <Card style={styles.briefing}>
@@ -272,6 +299,16 @@ const styles = StyleSheet.create({
   briefing: { backgroundColor: colors.surfaceAlt, borderColor: colors.gold + '55' },
   rowCenter: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   quickRow: { flexDirection: 'row', gap: space.md },
+  licence: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+    padding: space.md,
+    borderRadius: radius.md,
+    backgroundColor: colors.goldSoft,
+    borderWidth: 1,
+    borderColor: colors.gold + '55',
+  },
   voice: {
     flexDirection: 'row',
     alignItems: 'center',

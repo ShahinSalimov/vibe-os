@@ -122,12 +122,14 @@ export default function DocumentsScreen({ route, navigation }: RootProps<'Docume
                   {r ? <T variant="caption">{count}</T> : null}
                 </View>
                 {!r ? <T variant="caption">{t('riders.createBody')}</T> : null}
+                {!r && !write('riders') ? null : (
                 <Button
                   label={r ? t('common.edit') : t('riders.create')}
                   icon={r ? 'create-outline' : 'add'}
                   variant={r ? 'secondary' : 'primary'}
                   onPress={() => navigation.navigate('Rider', { kind })}
                 />
+                )}
               </Card>
             );
           })}

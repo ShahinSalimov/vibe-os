@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useLayoutEffect, useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { ReadOnlyBanner } from '../license/ReadOnlyBanner';
 import { useRole } from '../team/useRole';
 import { DateField } from '../components/DateField';
 import { EVENT_ICONS } from '../components/rows';
@@ -133,7 +134,7 @@ export default function EventFormScreen({ route, navigation }: RootProps<'EventF
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Screen edges={['bottom']} readOnly={ro}>
-        {ro ? <Banner icon="eye" text={t('readOnly')} /> : null}
+        {ro ? <ReadOnlyBanner /> : null}
         {draft ? <Banner icon="mic" text={t('voice.review')} /> : null}
         <Field
           voice

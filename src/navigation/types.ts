@@ -21,6 +21,7 @@ export type RootStackParamList = {
   Rider: { kind: 'technical' | 'hospitality' };
   PersonalDoc: { id?: string } | undefined;
   Team: undefined;
+  License: undefined;
   Tasks: undefined;
   TaskForm: { id?: string; eventId?: string } | undefined;
 };

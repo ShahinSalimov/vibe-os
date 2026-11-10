@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useLayoutEffect, useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { ReadOnlyBanner } from '../../license/ReadOnlyBanner';
 import { OptionalDateField } from '../../components/DateField';
 import { Banner, Button, Chips, EmptyState, Field, IconButton, Screen, Segmented, T, tap } from '../../components/ui';
 import { confirmAction, notify } from '../../lib/confirm';
@@ -11,11 +12,13 @@ import type { Language, Task } from '../../lib/types';
 import type { RootProps } from '../../navigation/types';
 import { daysUntil } from '../../notify/plan';
 import { useAppStore } from '../../store/useAppStore';
+import { useLicense } from '../../license/useLicense';
 import { useRole } from '../../team/useRole';
 import { colors, radius, space } from '../../theme/tokens';
 
 /** Can this user tick the task? Managers: any task. Others: only their own. Local (no team): always. */
-function canTick(task: Task, write: boolean, myId: string | null, inTeam: boolean) {
+function canTick(task: Task, write: boolean, myId: string | null, inTeam: boolean, licensed: boolean) {
+  if (!licensed) return false;
   return !inTeam || write || (!!myId && task.assigneeId === myId);
 }
 
@@ -28,6 +31,7 @@ export function TasksScreen({ navigation }: RootProps<'Tasks'>) {
   const myId = useAppStore((s) => s.cloud.userId);
   const toggleTask = useAppStore((s) => s.toggleTask);
   const { write, inTeam } = useRole();
+  const licensed = useLicense().canWrite;
   const canEdit = write('tasks');
   const [tab, setTab] = useState<'mine' | 'open' | 'done'>(inTeam && !canEdit ? 'mine' : 'open');
   const today = toISODate(new Date());
@@ -74,7 +78,7 @@ export function TasksScreen({ navigation }: RootProps<'Tasks'>) {
       ) : (
         <View style={{ gap: space.sm }}>
           {list.map((x) => {
-            const tick = canTick(x, canEdit, myId, inTeam);
+            const tick = canTick(x, canEdit, myId, inTeam, licensed);
             const left = x.due ? daysUntil(x.due, today) : null;
             const ev = x.eventId ? events.find((e) => e.id === x.eventId) : undefined;
             return (
@@ -169,7 +173,7 @@ export function TaskFormScreen({ route, navigation }: RootProps<'TaskForm'>) {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Screen edges={['bottom']}>
-        {!canEdit ? <Banner icon="eye" text={t('readOnly')} /> : null}
+        {!canEdit ? <ReadOnlyBanner /> : null}
         <Field voice label={t('tasks.fields.title')} value={title} onChangeText={setTitle} error={error ?? undefined} maxLength={150} editable={canEdit} />
         {inTeam && members.length ? (
           <View style={{ gap: space.sm }}>

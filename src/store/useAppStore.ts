@@ -400,7 +400,7 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'vibe-os-store',
-      version: 5,
+      version: 6,
       storage: createJSONStorage(() => AsyncStorage),
       partialize: ({
         profile,

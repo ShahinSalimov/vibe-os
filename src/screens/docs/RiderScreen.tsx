@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useLayoutEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { ReadOnlyBanner } from '../../license/ReadOnlyBanner';
 import { useRole } from '../../team/useRole';
 import { Banner, Button, Card, Chips, Field, Screen, T, tap } from '../../components/ui';
 import { riderHtml } from '../../docs/html';
@@ -91,7 +92,7 @@ export default function RiderScreen({ route, navigation }: RootProps<'Rider'>) {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Screen edges={['bottom']} readOnly={ro}>
-        {ro ? <Banner icon="eye" text={t('readOnly')} /> : null}
+        {ro ? <ReadOnlyBanner /> : null}
         <View style={{ gap: space.sm }}>
           <T variant="caption">{t('riders.language')}</T>
           <Chips value={language} onChange={changeLanguage} options={LANGUAGES.map((l) => ({ value: l, label: t(`languages.${l}`) }))} />

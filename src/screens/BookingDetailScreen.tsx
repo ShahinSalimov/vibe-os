@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useLayoutEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useRole } from '../team/useRole';
 import { ContactActions, StatusPill } from '../components/booking';
 import { EVENT_ICONS } from '../components/rows';
 import { Button, Card, IconButton, Screen, T, type IconName } from '../components/ui';
@@ -20,12 +21,13 @@ export default function BookingDetailScreen({ route, navigation }: RootProps<'Bo
   const setStatus = useAppStore((s) => s.setBookingStatus);
   const confirmBooking = useAppStore((s) => s.confirmBooking);
   const deleteBooking = useAppStore((s) => s.deleteBooking);
+  const canEdit = useRole().write('bookings');
 
   useLayoutEffect(() => {
     navigation.setOptions({
       title: t('bookings.edit'),
       headerRight: () =>
-        b ? (
+        b && canEdit ? (
           <IconButton
             icon="create-outline"
             label={t('common.edit')}
@@ -33,7 +35,7 @@ export default function BookingDetailScreen({ route, navigation }: RootProps<'Bo
           />
         ) : null,
     });
-  }, [navigation, t, b]);
+  }, [navigation, t, b, canEdit]);
 
   if (!b) return <Screen edges={['bottom']}>{null}</Screen>;
 
@@ -115,7 +117,7 @@ export default function BookingDetailScreen({ route, navigation }: RootProps<'Bo
       {b.status === 'confirmed' && linkedEvent ? (
         <Button label={t('bookings.openEvent')} icon="calendar" onPress={() => navigation.navigate('EventForm', { id: linkedEvent.id })} />
       ) : null}
-      {b.status === 'new' || b.status === 'negotiating' ? (
+      {canEdit && (b.status === 'new' || b.status === 'negotiating') ? (
         <>
           <Button label={t('bookings.confirm')} icon="checkmark-circle" onPress={confirm} />
           {b.status === 'new' ? (
@@ -129,10 +131,10 @@ export default function BookingDetailScreen({ route, navigation }: RootProps<'Bo
           <Button label={t('bookings.decline')} icon="close-circle" variant="secondary" onPress={() => setStatus(b.id, 'declined')} />
         </>
       ) : null}
-      {b.status === 'declined' ? (
+      {canEdit && b.status === 'declined' ? (
         <Button label={t('bookings.reopen')} icon="refresh" variant="secondary" onPress={() => setStatus(b.id, 'new')} />
       ) : null}
-      <Button label={t('common.delete')} icon="trash" variant="danger" onPress={remove} />
+      {canEdit ? <Button label={t('common.delete')} icon="trash" variant="danger" onPress={remove} /> : null}
     </Screen>
   );
 }

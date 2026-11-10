@@ -220,3 +220,27 @@ test('task mapping and migration v5 (existing cloud users become owners)', () =>
   const local = migrateStore({ cloud: { workspaceId: null } }, 4) as any;
   assert.equal(local.cloud.role, null);
 });
+
+import { canWriteWithLicense, cleanLicenseCode, formatLicenseCode, licenseState } from '../src/license/license';
+test('licence state: local trial, server trial, expiry, active, suspended, no-cloud builds', () => {
+  const now = new Date('2026-11-10T12:00:00Z');
+  assert.deepEqual(licenseState({ cloudConfigured: false, server: null, localStart: '2020-01-01T00:00:00Z', now }), { kind: 'unlimited' });
+  const local = licenseState({ cloudConfigured: true, server: null, localStart: '2026-11-09T12:00:00Z', now });
+  assert.equal(local.kind, 'trial');
+  assert.equal((local as any).daysLeft, 2);
+  assert.equal(licenseState({ cloudConfigured: true, server: null, localStart: '2026-11-07T11:00:00Z', now }).kind, 'expired');
+  // server wins over the local clock
+  const srv = licenseState({ cloudConfigured: true, server: { status: 'trial', trialEndsAt: '2026-11-10T18:00:00Z', activatedAt: null }, localStart: '2026-01-01T00:00:00Z', now });
+  assert.equal(srv.kind, 'trial');
+  assert.equal((srv as any).hoursLeft, 6);
+  assert.equal((srv as any).daysLeft, 1);
+  assert.equal(licenseState({ cloudConfigured: true, server: { status: 'active', trialEndsAt: '2020-01-01T00:00:00Z', activatedAt: 'x' }, localStart: null, now }).kind, 'active');
+  assert.equal(licenseState({ cloudConfigured: true, server: { status: 'suspended', trialEndsAt: '2099-01-01T00:00:00Z', activatedAt: null }, localStart: null, now }).kind, 'suspended');
+  assert.equal(canWriteWithLicense({ kind: 'expired', endsAt: '' }), false);
+  assert.equal(canWriteWithLicense({ kind: 'suspended' }), false);
+  assert.equal(canWriteWithLicense({ kind: 'unlimited' }), true);
+  assert.equal(cleanLicenseCode('abcd-efgh-2345'), 'ABCDEFGH2345');
+  assert.equal(cleanLicenseCode('abcd-efgh-2340'), null, '0 is not in the alphabet');
+  assert.equal(cleanLicenseCode('short'), null);
+  assert.equal(formatLicenseCode('ABCDEFGH2345'), 'ABCD-EFGH-2345');
+});

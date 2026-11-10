@@ -11,6 +11,8 @@ export interface CloudState {
   role: 'owner' | 'manager' | 'member' | 'accountant' | 'viewer' | null;
   /** Cloud user id (to recognise "my" tasks). */
   userId: string | null;
+  /** Licence of the current workspace as last seen on the server. */
+  license: { status: 'trial' | 'active' | 'suspended'; trialEndsAt: string; activatedAt: string | null } | null;
   lastSyncAt: string | null;
 }
 
@@ -23,9 +25,10 @@ export const emptyCloud: CloudState = {
   lastSyncAt: null,
   role: null,
   userId: null,
+  license: null,
 };
 
-/** v1 -> v2: updatedAt, bookings, contacts, tombstones, cloud. v2 -> v3: studio (songs, assets, setlists). v3 -> v4: contracts, riders, personal docs, reminders flag. v4 -> v5: tasks, team members, cloud role. */
+/** v1 -> v2: updatedAt, bookings, contacts, tombstones, cloud. v2 -> v3: studio (songs, assets, setlists). v3 -> v4: contracts, riders, personal docs, reminders flag. v4 -> v5: tasks, team members, cloud role. v5 -> v6: licence cache. */
 export function migrateStore(state: Record<string, unknown>, version: number): Record<string, unknown> {
   let out = state;
   if (version < 2) out = migrateV1(out);
@@ -37,6 +40,7 @@ export function migrateStore(state: Record<string, unknown>, version: number): R
     if (cloud.workspaceId && !cloud.role) cloud.role = 'owner';
     out = { ...out, tasks: [], members: [], cloud };
   }
+  if (version < 6) out = { ...out, cloud: { ...emptyCloud, ...((out.cloud as object) ?? {}) } };
   return out;
 }
 

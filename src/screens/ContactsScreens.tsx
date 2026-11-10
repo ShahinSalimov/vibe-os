@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useLayoutEffect, useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { ReadOnlyBanner } from '../license/ReadOnlyBanner';
 import { useRole } from '../team/useRole';
 import { ContactActions } from '../components/booking';
 import { Banner, Button, Chips, EmptyState, Field, IconButton, Screen, T, tap, type IconName } from '../components/ui';
@@ -25,16 +26,18 @@ const KIND_ICONS: Record<ContactKind, IconName> = {
 export function ContactsScreen({ navigation }: RootProps<'Contacts'>) {
   const { t } = useTranslation();
   const contacts = useAppStore((s) => s.contacts);
+  const canAdd = useRole().write('contacts');
   const [query, setQuery] = useState('');
 
   useLayoutEffect(() => {
     navigation.setOptions({
       title: t('contacts.title'),
-      headerRight: () => (
-        <IconButton icon="add" label={t('contacts.new')} color={colors.gold} onPress={() => navigation.navigate('ContactForm')} />
-      ),
+      headerRight: () =>
+        canAdd ? (
+          <IconButton icon="add" label={t('contacts.new')} color={colors.gold} onPress={() => navigation.navigate('ContactForm')} />
+        ) : null,
     });
-  }, [navigation, t]);
+  }, [navigation, t, canAdd]);
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -50,8 +53,8 @@ export function ContactsScreen({ navigation }: RootProps<'Contacts'>) {
           icon="people"
           title={t('contacts.empty')}
           body={t('contacts.emptyBody')}
-          action={t('contacts.new')}
-          onAction={() => navigation.navigate('ContactForm')}
+          action={canAdd ? t('contacts.new') : undefined}
+          onAction={canAdd ? () => navigation.navigate('ContactForm') : undefined}
         />
       ) : (
         <>
@@ -141,7 +144,7 @@ export function ContactFormScreen({ route, navigation }: RootProps<'ContactForm'
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Screen edges={['bottom']} readOnly={ro}>
-        {ro ? <Banner icon="eye" text={t('readOnly')} /> : null}
+        {ro ? <ReadOnlyBanner /> : null}
         {existing ? <ContactActions phone={existing.phone} email={existing.email} /> : null}
         <Field label={t('contacts.fields.name')} value={name} onChangeText={setName} error={errors.name} maxLength={100} />
         <View style={{ gap: space.sm }}>

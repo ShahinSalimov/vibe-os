@@ -2,6 +2,7 @@ import * as ImagePicker from 'expo-image-picker';
 import React, { useLayoutEffect, useMemo, useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { ReadOnlyBanner } from '../../license/ReadOnlyBanner';
 import { useRole } from '../../team/useRole';
 import { OptionalDateField } from '../../components/DateField';
 import { Banner, Button, Chips, Field, Screen, SectionHeader, T } from '../../components/ui';
@@ -168,7 +169,7 @@ export default function ContractScreen({ route, navigation }: RootProps<'Contrac
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Screen edges={['bottom']} readOnly={ro}>
-        {ro ? <Banner icon="eye" text={t('readOnly')} /> : null}
+        {ro ? <ReadOnlyBanner /> : null}
         <Banner icon="information-circle" tone="warning" text={t('contracts.disclaimer')} />
 
         <View style={{ gap: space.sm }}>

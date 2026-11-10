@@ -1,6 +1,7 @@
 import React, { useLayoutEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { ReadOnlyBanner } from '../license/ReadOnlyBanner';
 import { useRole } from '../team/useRole';
 import { DateField } from '../components/DateField';
 import { STATUS_COLORS } from '../components/rows';
@@ -96,7 +97,7 @@ export default function RecordFormScreen({ route, navigation }: RootProps<'Recor
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Screen edges={['bottom']} readOnly={ro}>
-        {ro ? <Banner icon="eye" text={t('readOnly')} /> : null}
+        {ro ? <ReadOnlyBanner /> : null}
         {draft ? <Banner icon="mic" text={t('voice.review')} /> : <Banner text={t('money.recordOnly')} />}
         <Segmented
           value={kind}
