@@ -4,6 +4,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { Avatar } from '../components/Avatar';
 import { EventRow } from '../components/rows';
 import { Card, Screen, SectionHeader, T, tap, type IconName } from '../components/ui';
 import { parseVoice } from '../lib/voiceParse';
@@ -80,11 +81,9 @@ export default function HomeScreen() {
             {profile?.stageName}
           </T>
         </View>
-        <View style={styles.avatar}>
-          <T variant="title" color={colors.onGold}>
-            {(profile?.stageName ?? '?').charAt(0).toUpperCase()}
-          </T>
-        </View>
+        <Pressable accessibilityRole="button" accessibilityLabel={t('more.profile')} onPress={() => nav.navigate('Tabs', { screen: 'More' } as never)}>
+          <Avatar name={profile?.stageName} uri={profile?.photoUri} size={48} />
+        </Pressable>
       </View>
 
       {/* Daily briefing */}
@@ -231,14 +230,6 @@ function Stat({ label, value, color }: { label: string; value: string; color: st
 
 const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.gold,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   briefing: { backgroundColor: colors.surfaceAlt, borderColor: colors.gold + '55' },
   rowCenter: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   quickRow: { flexDirection: 'row', gap: space.md },

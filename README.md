@@ -42,9 +42,26 @@ Buludu qoşmaq üçün: [docs/SETUP_CLOUD.md](docs/SETUP_CLOUD.md)
 Qeyd: səs modulu Expo Go-da işləmir, development build tələb edir (`npx expo run:android` / `run:ios` və ya EAS Build). Expo Go-da tətbiq səs düyməsi əvəzinə klaviaturanın mikrofonunu təklif edir.
 Azərbaycan dilində tanıma Android-də (Google) dəstəklənir. iOS-da Azərbaycan dilinin dəstəyi real cihazda yoxlanmalıdır.
 
+## Studiya
+
+| Hissə | Vəziyyət |
+|---|---|
+| Mahnı kartı: mərhələ (ideya → buraxılış), tonallıq, BPM, müddət, müəlliflər, sözlər | hazır |
+| İdeya yazmaq (mikrofon), aranjimançının demo/final faylını əlavə etmək, dinləmək | hazır, fayllar yalnız telefonda |
+| Setlist: mahnı seçmək, sıralamaq, tədbirə bağlamaq, ümumi müddət | hazır |
+| Səhnə rejimi: iri yazı, sözlər, ekran sönmür | hazır |
+| Bulud: mahnılar və setlistlər sinxronlaşır, musiqiçilər görür, yalnız sahib/menecer dəyişir | hazır (`0002_studio.sql`) |
+
+AI ilə musiqi yaratmaq istifadəçinin qərarı ilə hələlik saxlanılıb.
+
+## Profil şəkli
+
+Qeydiyyatda (istəyə bağlı) və "Digər" bölməsində seçilir. Əsas ekranda, profil kartında və kilid ekranında göstərilir.
+Telefonun ana ekranındakı tətbiq ikonu hər istifadəçi üçün dəyişdirilə bilmir (iOS və Android məhdudiyyəti).
+
 ## Növbəti mərhələlər
 
-Müqavilələr, komanda və rollar (dəvət), rider/setlist, AI köməkçi.
+Müqavilələr, komanda və rollar (dəvət), texniki rider, səs fayllarının buluda yüklənməsi, AI köməkçi.
 
 ## İşə salmaq
 

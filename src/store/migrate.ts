@@ -6,7 +6,7 @@ export interface CloudState {
   slug: string | null;
   lastPushAt: string | null;
   /** Per-table pull cursor (server synced_at). */
-  pullCursors: Partial<Record<'events' | 'money_records' | 'booking_requests' | 'contacts', string>>;
+  pullCursors: Partial<Record<'events' | 'money_records' | 'booking_requests' | 'contacts' | 'songs' | 'setlists', string>>;
   lastSyncAt: string | null;
 }
 
@@ -19,20 +19,24 @@ export const emptyCloud: CloudState = {
   lastSyncAt: null,
 };
 
-/** v1 (Phase 1) -> v2: adds updatedAt, bookings, contacts, tombstones, cloud. Exported for tests. */
+/** v1 -> v2: updatedAt, bookings, contacts, tombstones, cloud. v2 -> v3: studio (songs, assets, setlists). */
 export function migrateStore(state: Record<string, unknown>, version: number): Record<string, unknown> {
-  if (version < 2) {
-    const withUpdated = (list: unknown) =>
-      Array.isArray(list) ? list.map((x: Record<string, unknown>) => ({ ...x, updatedAt: x.updatedAt ?? x.createdAt })) : [];
-    return {
-      ...state,
-      events: withUpdated(state.events),
-      records: withUpdated(state.records),
-      bookings: [],
-      contacts: [],
-      tombstones: [],
-      cloud: emptyCloud,
-    };
-  }
-  return state;
+  let out = state;
+  if (version < 2) out = migrateV1(out);
+  if (version < 3) out = { ...out, songs: [], assets: [], setlists: [] };
+  return out;
+}
+
+function migrateV1(state: Record<string, unknown>): Record<string, unknown> {
+  const withUpdated = (list: unknown) =>
+    Array.isArray(list) ? list.map((x: Record<string, unknown>) => ({ ...x, updatedAt: x.updatedAt ?? x.createdAt })) : [];
+  return {
+    ...state,
+    events: withUpdated(state.events),
+    records: withUpdated(state.records),
+    bookings: [],
+    contacts: [],
+    tombstones: [],
+    cloud: emptyCloud,
+  };
 }

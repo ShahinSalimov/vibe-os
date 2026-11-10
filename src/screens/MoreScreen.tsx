@@ -8,6 +8,7 @@ import { Pressable } from 'react-native';
 import type { RootStackParamList } from '../navigation/types';
 import { Platform, StyleSheet, Switch, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { EditableAvatar } from '../components/Avatar';
 import { Button, Card, Chips, Screen, SectionHeader, T, type IconName } from '../components/ui';
 import { confirmAction, notify } from '../lib/confirm';
 import { currencySymbol } from '../lib/format';
@@ -27,9 +28,11 @@ export default function MoreScreen() {
   const profile = useAppStore((s) => s.profile);
   const settings = useAppStore((s) => s.settings);
   const updateSettings = useAppStore((s) => s.updateSettings);
+  const updateProfile = useAppStore((s) => s.updateProfile);
   const resetAll = useAppStore((s) => s.resetAll);
   const cloudEmail = useAppStore((s) => s.cloud.email);
   const contactsCount = useAppStore((s) => s.contacts.length);
+  const songsCount = useAppStore((s) => s.songs.length);
   const nav = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const setLanguage = (l: Language) => {
@@ -64,11 +67,12 @@ export default function MoreScreen() {
       <T variant="h1">{t('more.title')}</T>
 
       <Card style={styles.profile}>
-        <View style={styles.avatar}>
-          <T variant="h1" color={colors.onGold}>
-            {(profile?.stageName ?? '?').charAt(0).toUpperCase()}
-          </T>
-        </View>
+        <EditableAvatar
+          name={profile?.stageName}
+          uri={profile?.photoUri}
+          size={64}
+          onChange={(photoUri) => updateProfile({ photoUri })}
+        />
         <View style={{ flex: 1 }}>
           <T variant="title" numberOfLines={1}>
             {profile?.stageName}
@@ -80,6 +84,13 @@ export default function MoreScreen() {
       </Card>
 
       <Card style={{ gap: 0, paddingVertical: space.xs }}>
+        <NavRow
+          icon="musical-notes"
+          iconColor={colors.gold}
+          label={t('more.studio')}
+          value={songsCount ? String(songsCount) : ''}
+          onPress={() => nav.navigate('Studio')}
+        />
         <NavRow
           icon={cloudEmail ? 'cloud-done' : 'cloud-upload'}
           iconColor={cloudEmail ? colors.success : colors.gold}
@@ -183,14 +194,6 @@ function NavRow({
 const styles = StyleSheet.create({
   navRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, minHeight: 56 },
   profile: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.gold,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   moduleRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, minHeight: 48 },
 });

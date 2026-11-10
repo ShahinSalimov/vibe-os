@@ -44,6 +44,15 @@
             "com.google.android.googlequicksearchbox"
           ]
         }
+      ],
+      "expo-audio",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "VIBE OS uses your photos so you can choose a profile picture.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
       ]
     ],
     "backgroundColor": "#0B0A10"

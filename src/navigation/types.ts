@@ -12,6 +12,10 @@ export type RootStackParamList = {
   Contacts: undefined;
   ContactForm: { id?: string } | undefined;
   Account: undefined;
+  Studio: { tab?: 'songs' | 'setlists' } | undefined;
+  Song: { id?: string } | undefined;
+  Setlist: { id?: string; eventId?: string } | undefined;
+  StageMode: { id: string };
 };
 
 export type TabParamList = {

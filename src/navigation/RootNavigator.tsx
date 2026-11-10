@@ -18,6 +18,10 @@ import MoneyScreen from '../screens/MoneyScreen';
 import MoreScreen from '../screens/MoreScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import RecordFormScreen from '../screens/RecordFormScreen';
+import SetlistScreen from '../screens/studio/SetlistScreen';
+import SongScreen from '../screens/studio/SongScreen';
+import StageModeScreen from '../screens/studio/StageModeScreen';
+import StudioScreen from '../screens/studio/StudioScreen';
 import { useAppStore } from '../store/useAppStore';
 import { colors } from '../theme/tokens';
 import type { RootStackParamList, TabParamList } from './types';
@@ -108,6 +112,14 @@ export default function RootNavigator() {
             <Stack.Screen name="Contacts" component={ContactsScreen} />
             <Stack.Screen name="ContactForm" component={ContactFormScreen} options={{ presentation: 'modal' }} />
             <Stack.Screen name="Account" component={AccountScreen} />
+            <Stack.Screen name="Studio" component={StudioScreen} />
+            <Stack.Screen name="Song" component={SongScreen} />
+            <Stack.Screen name="Setlist" component={SetlistScreen} />
+            <Stack.Screen
+              name="StageMode"
+              component={StageModeScreen}
+              options={{ headerShown: false, presentation: 'fullScreenModal', animation: 'fade' }}
+            />
           </>
         )}
       </Stack.Navigator>

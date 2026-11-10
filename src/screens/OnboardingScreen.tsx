@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { EditableAvatar } from '../components/Avatar';
 import { Banner, Button, Chips, Field, Screen, T, tap, type IconName } from '../components/ui';
 import { currencySymbol } from '../lib/format';
 import {
@@ -32,6 +33,7 @@ export default function OnboardingScreen() {
   const [step, setStep] = useState(0);
   const [language, setLanguage] = useState<Language>(i18n.language as Language);
   const [stageName, setStageName] = useState('');
+  const [photoUri, setPhotoUri] = useState<string | undefined>();
   const [role, setRole] = useState<ArtistRole>('singer');
   const [genre, setGenre] = useState('');
   const [currency, setCurrency] = useState<Currency>(language === 'ru' ? 'RUB' : 'AZN');
@@ -44,7 +46,7 @@ export default function OnboardingScreen() {
 
   const finish = () => {
     completeOnboarding(
-      { stageName: stageName.trim(), role, genre: genre.trim() },
+      { stageName: stageName.trim(), role, genre: genre.trim(), photoUri },
       { language, currency, appLock: false },
     );
   };
@@ -98,6 +100,12 @@ export default function OnboardingScreen() {
             {step === 1 && (
               <>
                 <T variant="h1">{t('onboarding.nameTitle')}</T>
+                <View style={{ alignItems: 'center', gap: space.sm }}>
+                  <EditableAvatar name={stageName || '?'} uri={photoUri} size={104} onChange={setPhotoUri} />
+                  <T variant="caption">
+                    {photoUri ? t('profile.changePhoto') : `${t('profile.addPhoto')} · ${t('common.optional')}`}
+                  </T>
+                </View>
                 <Field
                   label={t('onboarding.nameTitle')}
                   value={stageName}

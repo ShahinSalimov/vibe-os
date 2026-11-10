@@ -165,4 +165,25 @@ end $$;
 select pg_temp.expect_error($q$select public.submit_booking('aysel', 'Spam', '+994551112233', '', 'concert', current_date + 5, '', '', null, null, 'AZN', '', 'en')$q$, 'rate_limited');
 reset role;
 \echo PASS 10 rate limit (30 requests/hour per artist)
+-- ---------- 11. studio: songs & setlists ----------
+set role authenticated;
+select pg_temp.login('00000000-0000-0000-0000-0000000000a1');
+insert into public.songs (id, workspace_id, title, stage, musical_key, bpm, duration_sec, lyrics)
+values ('song-aysel-01', :'wsa_create_workspace', 'Gecələr', 'arrangement', 'Am', 96, 215, 'Gecələr uzun...');
+insert into public.setlists (id, workspace_id, title, song_ids)
+values ('set-aysel-001', :'wsa_create_workspace', 'Toy proqramı', array['song-aysel-01']);
+select pg_temp.expect_error(format($q$insert into public.songs (id, workspace_id, title, bpm) values ('song-bad-001', '%s', 'x', 900)$q$, :'wsa_create_workspace'), 'check constraint');
+select pg_temp.expect_error(format($q$insert into public.songs (id, workspace_id, title, notes) values ('song-card-01', '%s', 'x', 'kart 4111 1111 1111 1111')$q$, :'wsa_create_workspace'), 'payment_data_not_allowed');
+select pg_temp.login('00000000-0000-0000-0000-00000000000e'); -- musician
+select pg_temp.ok((select count(*) = 1 from public.songs), 'musician sees songs');
+select pg_temp.ok((select count(*) = 1 from public.setlists), 'musician sees setlists');
+update public.songs set title = 'changed' where id = 'song-aysel-01';
+select pg_temp.login('00000000-0000-0000-0000-0000000000b1'); -- other artist
+select pg_temp.ok((select count(*) = 0 from public.songs), 'B must not see A songs');
+reset role;
+select pg_temp.ok((select title = 'Gecələr' from public.songs where id = 'song-aysel-01'), 'musician must not edit songs');
+set role anon;
+select pg_temp.expect_error($q$select count(*) from public.songs$q$, 'permission denied');
+reset role;
+\echo PASS 11 studio: team sees songs/setlists, only owner/manager edit, isolated, guarded
 \echo ALL DATABASE TESTS PASSED

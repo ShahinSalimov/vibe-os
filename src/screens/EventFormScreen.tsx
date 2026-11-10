@@ -30,6 +30,7 @@ export default function EventFormScreen({ route, navigation }: RootProps<'EventF
   const draftTitle = draft
     ? [draft.eventType ? t(`events.types.${draft.eventType}`) : '', draft.city, draft.counterparty].filter(Boolean).join(' · ')
     : '';
+  const linkedSetlist = useAppStore((s) => (id ? s.setlists.find((l) => l.eventId === id) : undefined));
   const linkedIncome = id ? records.find((r) => r.eventId === id && r.kind === 'income') : undefined;
 
   const [title, setTitle] = useState(existing?.title ?? draftTitle);
@@ -251,6 +252,17 @@ export default function EventFormScreen({ route, navigation }: RootProps<'EventF
             </Pressable>
           ) : null}
         </Card>
+
+        {existing ? (
+          <Button
+            label={linkedSetlist ? `${t('events.setlist')}: ${linkedSetlist.title}` : `${t('events.setlist')} +`}
+            icon="list"
+            variant="secondary"
+            onPress={() =>
+              linkedSetlist ? navigation.navigate('Setlist', { id: linkedSetlist.id }) : navigation.navigate('Setlist', { eventId: existing.id })
+            }
+          />
+        ) : null}
 
         <Field
           voice

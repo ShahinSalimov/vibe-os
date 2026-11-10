@@ -11,6 +11,9 @@ import type {
   MoneyRecord,
   Profile,
   Settings,
+  Setlist,
+  Song,
+  SongAsset,
   SyncTable,
   Tombstone,
 } from '../lib/types';
@@ -33,6 +36,10 @@ interface AppState {
   contacts: Contact[];
   tombstones: Tombstone[];
   cloud: CloudState;
+  songs: Song[];
+  /** Audio files: device-only. */
+  assets: SongAsset[];
+  setlists: Setlist[];
 
   completeOnboarding: (profile: Omit<Profile, 'createdAt'>, settings: Settings) => void;
   updateSettings: (patch: Partial<Settings>) => void;
@@ -48,6 +55,14 @@ interface AppState {
   confirmBooking: (id: string, eventTitle: string) => string | null;
   saveContact: (c: Input<Contact>) => string;
   deleteContact: (id: string) => void;
+
+  saveSong: (s: Input<Song>) => string;
+  /** Removes the song, its audio records and its place in setlists. Returns the removed asset URIs (files to delete). */
+  deleteSong: (id: string) => string[];
+  saveAsset: (a: Input<SongAsset>) => string;
+  deleteAsset: (id: string) => string | null;
+  saveSetlist: (s: Input<Setlist>) => string;
+  deleteSetlist: (id: string) => void;
 
   // cloud
   setCloud: (patch: Partial<CloudState>) => void;
@@ -82,6 +97,9 @@ export const useAppStore = create<AppState>()(
       contacts: [],
       tombstones: [],
       cloud: emptyCloud,
+      songs: [],
+      assets: [],
+      setlists: [],
 
       completeOnboarding: (profile, settings) => set({ profile: { ...profile, createdAt: now() }, settings }),
       updateSettings: (patch) => set((s) => ({ settings: { ...s.settings, ...patch } })),
@@ -98,6 +116,7 @@ export const useAppStore = create<AppState>()(
           // keep linked money records and bookings, just unlink them
           records: s.records.map((r) => (r.eventId === id ? { ...r, eventId: undefined, updatedAt: now() } : r)),
           bookings: s.bookings.map((b) => (b.eventId === id ? { ...b, eventId: undefined, updatedAt: now() } : b)),
+          setlists: s.setlists.map((l) => (l.eventId === id ? { ...l, eventId: undefined, updatedAt: now() } : l)),
           tombstones: [...s.tombstones, tomb('events', id)],
         })),
 
@@ -193,6 +212,45 @@ export const useAppStore = create<AppState>()(
           tombstones: [...s.tombstones, tomb('contacts', id)],
         })),
 
+      saveSong: (input) => {
+        const [songs, id] = upsert(get().songs, input);
+        set({ songs });
+        return id;
+      },
+      deleteSong: (id) => {
+        const s = get();
+        const removed = s.assets.filter((a) => a.songId === id).map((a) => a.uri);
+        set({
+          songs: s.songs.filter((x) => x.id !== id),
+          assets: s.assets.filter((a) => a.songId !== id),
+          setlists: s.setlists.map((l) =>
+            l.songIds.includes(id) ? { ...l, songIds: l.songIds.filter((x) => x !== id), updatedAt: now() } : l,
+          ),
+          tombstones: [...s.tombstones, tomb('songs', id)],
+        });
+        return removed;
+      },
+      saveAsset: (input) => {
+        const [assets, id] = upsert(get().assets, input);
+        set({ assets });
+        return id;
+      },
+      deleteAsset: (id) => {
+        const a = get().assets.find((x) => x.id === id);
+        set((s) => ({ assets: s.assets.filter((x) => x.id !== id) }));
+        return a?.uri ?? null;
+      },
+      saveSetlist: (input) => {
+        const [setlists, id] = upsert(get().setlists, input);
+        set({ setlists });
+        return id;
+      },
+      deleteSetlist: (id) =>
+        set((s) => ({
+          setlists: s.setlists.filter((x) => x.id !== id),
+          tombstones: [...s.tombstones, tomb('setlists', id)],
+        })),
+
       setCloud: (patch) => set((s) => ({ cloud: { ...s.cloud, ...patch } })),
 
       applyRemote: (table, rows) =>
@@ -206,6 +264,10 @@ export const useAppStore = create<AppState>()(
               return { bookings: mergeRemote(s.bookings, rows, mappers.booking_requests.fromRow) };
             case 'contacts':
               return { contacts: mergeRemote(s.contacts, rows, mappers.contacts.fromRow) };
+            case 'songs':
+              return { songs: mergeRemote(s.songs, rows, mappers.songs.fromRow) };
+            case 'setlists':
+              return { setlists: mergeRemote(s.setlists, rows, mappers.setlists.fromRow) };
           }
         }),
       clearTombstones: (upTo) =>
@@ -224,13 +286,19 @@ export const useAppStore = create<AppState>()(
           contacts: [],
           tombstones: [],
           cloud: emptyCloud,
+          songs: [],
+          assets: [],
+          setlists: [],
         }),
     }),
     {
       name: 'vibe-os-store',
-      version: 2,
+      version: 3,
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: ({ profile, settings, events, records, bookings, contacts, tombstones, cloud }) => ({
+      partialize: ({ profile, settings, events, records, bookings, contacts, tombstones, cloud, songs, assets, setlists }) => ({
+        songs,
+        assets,
+        setlists,
         profile,
         settings,
         events,

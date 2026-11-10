@@ -96,7 +96,7 @@ test('validPhone mirrors the server rule', () => {
   for (const p of ['4111 1111 1111 1111', 'abc', '123', '+1234567890123456']) assert.equal(validPhone(p), false, p);
 });
 
-test('store migration v1 -> v2 keeps Phase 1 data', () => {
+test('store migration v1 -> v3 keeps Phase 1 data', () => {
   const v1 = {
     profile: { stageName: 'Aysel' },
     events: [{ id: 'e1', createdAt: '2026-11-01T00:00:00Z' }],
@@ -110,7 +110,10 @@ test('store migration v1 -> v2 keeps Phase 1 data', () => {
   assert.deepEqual(v2.contacts, []);
   assert.deepEqual(v2.tombstones, []);
   assert.equal(v2.cloud.workspaceId, null);
-  assert.equal(migrateStore(v2, 2), v2);
+  assert.deepEqual(v2.songs, []);
+  assert.deepEqual(v2.setlists, []);
+  const v3 = migrateStore({ events: [{ id: 'e' }], songs: [{ id: 's' }] }, 3);
+  assert.deepEqual((v3 as any).songs, [{ id: 's' }], 'v3 data untouched');
 });
 
 import { internationalDigits, mailtoUrl, telUrl, whatsappUrl } from '../src/lib/contactLinks';
@@ -132,4 +135,36 @@ test('merge returns the same array when nothing changed (no sync loop)', () => {
   assert.equal(mergeRemote(local, [sameRow], mappers.events.fromRow), local);
   assert.equal(mergeRemote(local, [], mappers.events.fromRow), local);
   assert.notEqual(mergeRemote(local, [{ ...sameRow, updated_at: '2026-11-06T00:00:00.000Z' }], mappers.events.fromRow), local);
+});
+
+import type { Setlist, Song } from '../src/lib/types';
+test('song and setlist mapping round-trips (nulls, empty release date, array)', () => {
+  const song: Song = { id: 'song-000001', title: 'Gecələr', stage: 'arrangement', musicalKey: 'Am', bpm: 96, durationSec: 215,
+    lyrics: 'Gecələr uzun', authors: 'Aysel', notes: '', releaseDate: '', createdAt: '2026-11-01T00:00:00.000Z', updatedAt: '2026-11-01T00:00:00.000Z' };
+  const row = mappers.songs.toRow(song, 'w');
+  assert.equal(row.release_date, null);
+  assert.deepEqual(mappers.songs.fromRow(row), song);
+  const empty: Song = { ...song, bpm: null, durationSec: null, releaseDate: '2027-02-14' };
+  assert.deepEqual(mappers.songs.fromRow(mappers.songs.toRow(empty, 'w')), empty);
+  const sl: Setlist = { id: 'set-000001', title: 'Toy', songIds: ['a', 'b'], createdAt: song.createdAt, updatedAt: song.updatedAt };
+  assert.deepEqual(mappers.setlists.fromRow(mappers.setlists.toRow(sl, 'w')), sl);
+  assert.deepEqual(mappers.setlists.fromRow({ ...mappers.setlists.toRow({ ...sl, eventId: 'ev1' }, 'w') }).eventId, 'ev1');
+});
+
+import { formatDuration, moveItem, parseDuration, setlistTotals } from '../src/studio/format';
+test('studio: durations, setlist totals, reordering', () => {
+  assert.equal(formatDuration(215), '3:35');
+  assert.equal(formatDuration(3725), '1:02:05');
+  assert.equal(formatDuration(null), '—');
+  assert.equal(parseDuration('3:35'), 215);
+  assert.equal(parseDuration('215'), 215);
+  assert.equal(parseDuration(''), null);
+  assert.equal(parseDuration('3:75'), undefined);
+  assert.equal(parseDuration('abc'), undefined);
+  const mk = (id: string, d: number | null) => ({ id, durationSec: d }) as any;
+  const t = setlistTotals({ songIds: ['a', 'b', 'gone', 'c'] } as any, [mk('a', 200), mk('b', null), mk('c', 100)]);
+  assert.deepEqual(t, { seconds: 300, unknown: 1, count: 3 });
+  assert.deepEqual(moveItem(['a', 'b', 'c'], 0, 2), ['b', 'c', 'a']);
+  const same = ['a'];
+  assert.equal(moveItem(same, 0, 1), same);
 });

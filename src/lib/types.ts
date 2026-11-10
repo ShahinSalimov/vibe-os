@@ -33,6 +33,8 @@ export interface Profile {
   stageName: string;
   role: ArtistRole;
   genre: string;
+  /** Local file URI of the profile photo (device only in this version). */
+  photoUri?: string;
   createdAt: string;
 }
 
@@ -127,10 +129,54 @@ export interface Contact {
 }
 
 /** Entities that sync with the cloud. */
-export type SyncTable = 'events' | 'money_records' | 'booking_requests' | 'contacts';
+export type SyncTable = 'events' | 'money_records' | 'booking_requests' | 'contacts' | 'songs' | 'setlists';
 
 export interface Tombstone {
   table: SyncTable;
   id: string;
   deletedAt: string;
+}
+
+// ---------- Studio ----------
+
+export type SongStage = 'idea' | 'writing' | 'demo' | 'arrangement' | 'recording' | 'mixing' | 'mastering' | 'released';
+export const SONG_STAGES: SongStage[] = ['idea', 'writing', 'demo', 'arrangement', 'recording', 'mixing', 'mastering', 'released'];
+
+export interface Song {
+  id: string;
+  title: string;
+  stage: SongStage;
+  musicalKey: string;
+  bpm: number | null;
+  durationSec: number | null;
+  lyrics: string;
+  authors: string;
+  notes: string;
+  releaseDate: ISODate | '';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type AssetKind = 'idea' | 'demo' | 'final' | 'other';
+export const ASSET_KINDS: AssetKind[] = ['idea', 'demo', 'final', 'other'];
+
+/** An audio file of a song. Stored on this device only (not synced in this version). */
+export interface SongAsset {
+  id: string;
+  songId: string;
+  kind: AssetKind;
+  label: string;
+  uri: string;
+  durationSec: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Setlist {
+  id: string;
+  title: string;
+  eventId?: string;
+  songIds: string[];
+  createdAt: string;
+  updatedAt: string;
 }
