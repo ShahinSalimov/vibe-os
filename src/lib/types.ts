@@ -42,6 +42,8 @@ export interface Settings {
   language: Language;
   currency: Currency;
   appLock: boolean;
+  /** Visual theme id (see theme/tokens THEMES). Missing = 'stage'. */
+  theme?: 'stage' | 'rose' | 'amethyst' | 'ocean' | 'graphite' | 'daylight';
 }
 
 /** ISO date "YYYY-MM-DD" */

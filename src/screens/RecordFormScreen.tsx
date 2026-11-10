@@ -13,7 +13,7 @@ import { detectSensitiveIn } from '../lib/sensitive';
 import { CURRENCIES, TX_STATUSES, type Currency, type Language, type TxKind, type TxStatus } from '../lib/types';
 import type { RootProps } from '../navigation/types';
 import { useAppStore } from '../store/useAppStore';
-import { colors, space } from '../theme/tokens';
+import { colors, space, themed } from '../theme/tokens';
 
 export default function RecordFormScreen({ route, navigation }: RootProps<'RecordForm'>) {
   const { t, i18n } = useTranslation();
@@ -198,7 +198,9 @@ export default function RecordFormScreen({ route, navigation }: RootProps<'Recor
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   statusWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   statusBtn: { minHeight: 44, paddingHorizontal: space.md, flexGrow: 1 },
-});
+  }),
+);

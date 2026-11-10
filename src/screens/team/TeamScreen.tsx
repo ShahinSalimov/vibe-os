@@ -11,15 +11,15 @@ import type { RootProps } from '../../navigation/types';
 import { useAppStore } from '../../store/useAppStore';
 import { INVITE_ROLES, type MemberRole } from '../../team/permissions';
 import { useRole } from '../../team/useRole';
-import { colors, radius, space } from '../../theme/tokens';
+import { colors, radius, space, themed } from '../../theme/tokens';
 
-const ROLE_COLORS: Record<MemberRole, string> = {
+const ROLE_COLORS: Record<MemberRole, string> = themed(() => ({
   owner: colors.gold,
   manager: colors.violet,
   member: colors.success,
   accountant: colors.warning,
   viewer: colors.textMuted,
-};
+}));
 
 export default function TeamScreen({ navigation }: RootProps<'Team'>) {
   const { t } = useTranslation();
@@ -247,7 +247,8 @@ export default function TeamScreen({ navigation }: RootProps<'Team'>) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   member: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   dot: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   roleRow: {
@@ -262,4 +263,5 @@ const styles = StyleSheet.create({
   roleRowActive: { borderColor: colors.gold, backgroundColor: colors.goldSoft },
   codeBox: { alignItems: 'center', gap: space.sm, padding: space.md, borderRadius: radius.md, backgroundColor: colors.surfaceAlt },
   code: { fontSize: 34, fontWeight: '800', letterSpacing: 4, color: colors.text },
-});
+  }),
+);

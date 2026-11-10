@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Avatar } from '../components/Avatar';
 import { Button, T } from '../components/ui';
 import { useAppStore } from '../store/useAppStore';
-import { colors, space } from '../theme/tokens';
+import { colors, space, themed } from '../theme/tokens';
 
 export default function LockScreen({ onUnlock }: { onUnlock: () => void }) {
   const { t } = useTranslation();
@@ -44,7 +44,8 @@ export default function LockScreen({ onUnlock }: { onUnlock: () => void }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   root: {
     ...StyleSheet.absoluteFill,
     backgroundColor: colors.bg,
@@ -74,4 +75,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+  }),
+);

@@ -16,7 +16,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
-import { colors, font, radius, space, TAP } from '../theme/tokens';
+import { colors, font, radius, space, TAP, themed } from '../theme/tokens';
 import { VoiceSheet } from '../voice/VoiceSheet';
 
 export type IconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -152,12 +152,12 @@ export function Button({
   );
 }
 
-const buttonVariants = {
+const buttonVariants = themed(() => ({
   primary: { bg: colors.gold, fg: colors.onGold, border: colors.gold },
   secondary: { bg: colors.surfaceAlt, fg: colors.text, border: colors.border },
   ghost: { bg: 'transparent', fg: colors.textMuted, border: 'transparent' },
   danger: { bg: colors.dangerSoft, fg: colors.danger, border: 'transparent' },
-};
+}));
 
 export function IconButton({
   icon,
@@ -390,7 +390,8 @@ export function EmptyState({
 
 // ---------- Styles ----------
 
-const textStyles = StyleSheet.create({
+const textStyles = themed(() =>
+  StyleSheet.create({
   display: { fontSize: font.display, fontWeight: '800', color: colors.text, letterSpacing: -0.5 },
   h1: { fontSize: font.h1, fontWeight: '800', color: colors.text, letterSpacing: -0.3 },
   title: { fontSize: font.title, fontWeight: '700', color: colors.text },
@@ -404,9 +405,11 @@ const textStyles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
-});
+  }),
+);
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   screenContent: { padding: space.lg, gap: space.lg, paddingBottom: space.xxl * 2 },
   card: {
@@ -502,4 +505,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: space.sm,
   },
-});
+  }),
+);

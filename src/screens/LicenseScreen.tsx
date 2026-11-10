@@ -12,7 +12,7 @@ import type { Language } from '../lib/types';
 import type { RootProps } from '../navigation/types';
 import { useAppStore } from '../store/useAppStore';
 import { useRole } from '../team/useRole';
-import { colors, space } from '../theme/tokens';
+import { colors, space, themed } from '../theme/tokens';
 
 export default function LicenseScreen({ navigation }: RootProps<'License'>) {
   const { t, i18n } = useTranslation();
@@ -137,7 +137,9 @@ export default function LicenseScreen({ navigation }: RootProps<'License'>) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   head: { alignItems: 'center', gap: space.sm, paddingVertical: space.xl },
   badge: { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center' },
-});
+  }),
+);

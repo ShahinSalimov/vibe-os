@@ -11,7 +11,7 @@ import { formatMoney } from '../lib/format';
 import type { Language, TxKind } from '../lib/types';
 import type { RootStackParamList } from '../navigation/types';
 import { useAppStore } from '../store/useAppStore';
-import { colors, space } from '../theme/tokens';
+import { colors, space, themed } from '../theme/tokens';
 
 export default function MoneyScreen() {
   const { t, i18n } = useTranslation();
@@ -104,7 +104,9 @@ export default function MoneyScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   actions: { flexDirection: 'row', gap: space.md },
   balanceRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, minHeight: 36 },
-});
+  }),
+);

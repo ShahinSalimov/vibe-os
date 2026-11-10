@@ -12,7 +12,7 @@ import { detectSensitiveIn, validPhone } from '../lib/sensitive';
 import { CURRENCIES, EVENT_TYPES, type Currency, type EventType, type Language } from '../lib/types';
 import type { RootProps } from '../navigation/types';
 import { useAppStore } from '../store/useAppStore';
-import { colors, radius, space } from '../theme/tokens';
+import { colors, radius, space, themed } from '../theme/tokens';
 
 /** Manual booking request (from a phone call / WhatsApp). Link requests arrive via the cloud. */
 export default function BookingFormScreen({ route, navigation }: RootProps<'BookingForm'>) {
@@ -188,7 +188,8 @@ export default function BookingFormScreen({ route, navigation }: RootProps<'Book
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   row2: { flexDirection: 'row', gap: space.md },
   typeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   typeCell: {
@@ -204,4 +205,5 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   typeCellActive: { backgroundColor: colors.gold, borderColor: colors.gold },
-});
+  }),
+);

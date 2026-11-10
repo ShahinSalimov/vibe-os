@@ -31,6 +31,8 @@ const en = {
     genrePlaceholder: 'e.g. Pop, Mugham, Jazz',
     currencyTitle: 'Your main currency',
     currencyHint: 'You can use other currencies in any record.',
+    themeTitle: 'Choose your style',
+    themeHint: 'You can change it any time in More.',
     start: 'Start',
     privacy: 'Your data stays in your account. VIBE OS never asks for card or bank details.',
   },
@@ -177,6 +179,7 @@ const en = {
   },
   more: {
     title: 'More',
+    appearance: 'Appearance',
     license: 'Licence',
     team: 'Team',
     tasks: 'Tasks',
@@ -634,6 +637,14 @@ const en = {
       not_owner: 'Only the artist (owner) can activate.',
       generic: 'Something went wrong: {{msg}}',
     },
+  },
+  themes: {
+    stage: { name: 'Stage', desc: 'Dark with a gold spotlight' },
+    rose: { name: 'Rose gold', desc: 'Light, soft rose and champagne' },
+    amethyst: { name: 'Amethyst', desc: 'Deep purple with orchid' },
+    ocean: { name: 'Midnight blue', desc: 'Navy with electric blue' },
+    graphite: { name: 'Graphite', desc: 'Dark grey with bold orange' },
+    daylight: { name: 'Daylight', desc: 'Clean and bright' },
   },
   calendar: {
     pick: 'Pick a date',

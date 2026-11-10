@@ -8,7 +8,7 @@ import { T, tap } from '../../components/ui';
 import type { RootProps } from '../../navigation/types';
 import { useAppStore } from '../../store/useAppStore';
 import { formatDuration } from '../../studio/format';
-import { colors, space } from '../../theme/tokens';
+import { colors, space, themed } from '../../theme/tokens';
 
 /** Full-screen, high-contrast setlist for the stage. Screen stays awake. */
 export default function StageModeScreen({ route, navigation }: RootProps<'StageMode'>) {
@@ -111,8 +111,9 @@ function Meta({ label }: { label: string }) {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#000' },
+const styles = themed(() =>
+  StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.bg },
   top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: space.lg, paddingTop: space.sm },
   exit: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
@@ -131,4 +132,5 @@ const styles = StyleSheet.create({
   },
   nav: { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surfaceAlt },
   navNext: { backgroundColor: colors.gold },
-});
+  }),
+);

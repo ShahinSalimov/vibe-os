@@ -9,7 +9,7 @@ import { PERSONAL_DOC_KINDS, type PersonalDocKind } from '../../lib/types';
 import type { RootProps } from '../../navigation/types';
 import { useAppStore } from '../../store/useAppStore';
 import { keepFile, removeFile } from '../../studio/files';
-import { colors, radius, space } from '../../theme/tokens';
+import { colors, radius, space, themed } from '../../theme/tokens';
 import { DOC_ICONS } from './DocumentsScreen';
 
 /** Passport / visa reminder. Device-only. No document number field on purpose. */
@@ -100,6 +100,8 @@ export default function PersonalDocScreen({ route, navigation }: RootProps<'Pers
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   photo: { width: '100%', height: 200, borderRadius: radius.md, backgroundColor: colors.surfaceAlt },
-});
+  }),
+);

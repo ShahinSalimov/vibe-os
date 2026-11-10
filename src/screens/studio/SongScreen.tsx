@@ -22,7 +22,7 @@ import type { RootProps } from '../../navigation/types';
 import { useAppStore } from '../../store/useAppStore';
 import { keepAudioFile, removeAudioFile } from '../../studio/files';
 import { formatDuration, parseDuration } from '../../studio/format';
-import { colors, radius, space } from '../../theme/tokens';
+import { colors, radius, space, themed } from '../../theme/tokens';
 import { StageProgress } from './StudioScreen';
 
 export default function SongScreen({ route, navigation }: RootProps<'Song'>) {
@@ -441,7 +441,8 @@ function RecorderSheet({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   row2: { flexDirection: 'row', gap: space.md },
   row3: { flexDirection: 'row', gap: space.sm },
   assetCard: { gap: space.sm, padding: space.md },
@@ -466,4 +467,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: space.lg,
   },
-});
+  }),
+);

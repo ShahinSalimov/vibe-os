@@ -4,7 +4,7 @@ import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { formatDate, MONTHS, parseISODate, toISODate, WEEKDAYS } from '../lib/format';
 import type { ISODate, Language } from '../lib/types';
-import { colors, font, radius, space, TAP } from '../theme/tokens';
+import { colors, font, radius, space, TAP, themed } from '../theme/tokens';
 import { Button, T, tap, useReadOnly } from './ui';
 
 /**
@@ -130,7 +130,8 @@ export function DateField({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   trigger: {
     minHeight: TAP,
     flexDirection: 'row',
@@ -177,7 +178,8 @@ const styles = StyleSheet.create({
   cellToday: { borderWidth: 1, borderColor: colors.gold },
   cellText: { color: colors.text, fontSize: font.body },
   dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.violet, position: 'absolute', bottom: 6 },
-});
+  }),
+);
 
 /** Date that may be empty: shows an "add date" button until set, plus a clear button. */
 export function OptionalDateField({

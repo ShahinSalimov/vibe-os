@@ -12,7 +12,7 @@ import type { Language } from '../../lib/types';
 import type { RootProps } from '../../navigation/types';
 import { useAppStore } from '../../store/useAppStore';
 import { formatDuration, moveItem, setlistTotals } from '../../studio/format';
-import { colors, radius, space } from '../../theme/tokens';
+import { colors, radius, space, themed } from '../../theme/tokens';
 
 export default function SetlistScreen({ route, navigation }: RootProps<'Setlist'>) {
   const { t, i18n } = useTranslation();
@@ -224,7 +224,8 @@ function SmallIcon({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   totals: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center' },
   item: {
     flexDirection: 'row',
@@ -258,4 +259,5 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     backgroundColor: colors.surface,
   },
-});
+  }),
+);

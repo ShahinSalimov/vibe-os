@@ -14,7 +14,7 @@ import { detectSensitiveIn, validPhone } from '../lib/sensitive';
 import { CURRENCIES, EVENT_TYPES, type Currency, type EventType, type Language } from '../lib/types';
 import type { RootProps } from '../navigation/types';
 import { useAppStore } from '../store/useAppStore';
-import { colors, radius, space } from '../theme/tokens';
+import { colors, radius, space, themed } from '../theme/tokens';
 
 export default function EventFormScreen({ route, navigation }: RootProps<'EventForm'>) {
   const { t, i18n } = useTranslation();
@@ -302,7 +302,8 @@ export default function EventFormScreen({ route, navigation }: RootProps<'EventF
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   row2: { flexDirection: 'row', gap: space.md },
   typeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   typeCell: {
@@ -319,4 +320,5 @@ const styles = StyleSheet.create({
   },
   typeCellActive: { backgroundColor: colors.gold, borderColor: colors.gold },
   check: { flexDirection: 'row', alignItems: 'center', gap: space.sm, minHeight: 44 },
-});
+  }),
+);

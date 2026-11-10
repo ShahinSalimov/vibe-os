@@ -11,7 +11,7 @@ import { Button, Card, EmptyState, IconButton, Screen, Segmented, T } from '../c
 import { bookingLink, isCloudConfigured } from '../cloud/config';
 import type { RootStackParamList } from '../navigation/types';
 import { useAppStore } from '../store/useAppStore';
-import { colors, space } from '../theme/tokens';
+import { colors, space, themed } from '../theme/tokens';
 
 type Filter = 'active' | 'confirmed' | 'declined';
 
@@ -132,8 +132,10 @@ export default function BookingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   linkCard: { backgroundColor: colors.surfaceAlt, borderColor: colors.gold + '55' },
   rowCenter: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-});
+  }),
+);

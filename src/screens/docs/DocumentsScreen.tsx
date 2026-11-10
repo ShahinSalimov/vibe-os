@@ -9,14 +9,14 @@ import type { ContractStatus, Language, PersonalDocKind, RiderKind } from '../..
 import type { RootProps } from '../../navigation/types';
 import { daysUntil } from '../../notify/plan';
 import { useAppStore } from '../../store/useAppStore';
-import { colors, radius, space } from '../../theme/tokens';
+import { colors, radius, space, themed } from '../../theme/tokens';
 
-export const CONTRACT_STATUS_COLORS: Record<ContractStatus, { fg: string; bg: string }> = {
+export const CONTRACT_STATUS_COLORS: Record<ContractStatus, { fg: string; bg: string }> = themed(() => ({
   draft: { fg: colors.textMuted, bg: colors.surfaceAlt },
   sent: { fg: colors.violet, bg: colors.violetSoft },
   signed: { fg: colors.success, bg: colors.successSoft },
   cancelled: { fg: colors.textFaint, bg: colors.surfaceAlt },
-};
+}));
 
 export const DOC_ICONS: Record<PersonalDocKind, IconName> = {
   passport: 'globe',
@@ -206,7 +206,8 @@ function Pill({ text, fg, bg }: { text: string; fg: string; bg: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   line: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   row: {
     flexDirection: 'row',
@@ -227,4 +228,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   pill: { paddingHorizontal: space.sm, paddingVertical: 2, borderRadius: radius.pill },
-});
+  }),
+);

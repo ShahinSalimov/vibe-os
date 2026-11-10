@@ -4,7 +4,7 @@ import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { keepFile, removeFile } from '../studio/files';
-import { colors } from '../theme/tokens';
+import { colors, themed } from '../theme/tokens';
 import { tap } from './ui';
 
 /** Profile photo, or the first letter of the stage name on a gold circle. */
@@ -66,7 +66,8 @@ export function EditableAvatar({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   img: { backgroundColor: colors.surfaceAlt },
   letter: { backgroundColor: colors.gold, alignItems: 'center', justifyContent: 'center' },
   badge: {
@@ -82,4 +83,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+  }),
+);

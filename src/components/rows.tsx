@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { outstanding } from '../lib/finance';
 import { daysBetween, formatDate, formatMoney, MONTHS, parseISODate, toISODate } from '../lib/format';
 import type { ArtistEvent, EventType, Language, MoneyRecord, TxStatus } from '../lib/types';
-import { colors, radius, space } from '../theme/tokens';
+import { colors, radius, space, themed } from '../theme/tokens';
 import { T, tap, type IconName } from './ui';
 
 export const EVENT_ICONS: Record<EventType, IconName> = {
@@ -20,12 +20,12 @@ export const EVENT_ICONS: Record<EventType, IconName> = {
   studio: 'headset',
 };
 
-export const STATUS_COLORS: Record<TxStatus, { fg: string; bg: string }> = {
+export const STATUS_COLORS: Record<TxStatus, { fg: string; bg: string }> = themed(() => ({
   planned: { fg: colors.violet, bg: colors.violetSoft },
   partial: { fg: colors.warning, bg: colors.goldSoft },
   paid: { fg: colors.success, bg: colors.successSoft },
   overdue: { fg: colors.danger, bg: colors.dangerSoft },
-};
+}));
 
 export function useRelativeDay() {
   const { t } = useTranslation();
@@ -137,7 +137,8 @@ export function RecordRow({ record, onPress }: { record: MoneyRecord; onPress: (
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -172,4 +173,5 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     marginTop: 2,
   },
-});
+  }),
+);

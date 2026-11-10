@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { DarkTheme, NavigationContainer, type Theme } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, NavigationContainer, type NavigationState, type Theme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -37,18 +37,24 @@ import type { RootStackParamList, TabParamList } from './types';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
 
-const theme: Theme = {
-  ...DarkTheme,
-  colors: {
-    ...DarkTheme.colors,
-    primary: colors.gold,
-    background: colors.bg,
-    card: colors.surface,
-    text: colors.text,
-    border: colors.border,
-    notification: colors.gold,
-  },
-};
+function navTheme(): Theme {
+  const base = colors.mode === 'light' ? DefaultTheme : DarkTheme;
+  return {
+    ...base,
+    colors: {
+      ...base.colors,
+      primary: colors.gold,
+      background: colors.bg,
+      card: colors.surface,
+      text: colors.text,
+      border: colors.border,
+      notification: colors.gold,
+    },
+  };
+}
+
+// Survives the remount that happens when the theme changes, so the user stays on the same screen.
+let savedNavState: NavigationState | undefined;
 
 const TAB_ICONS: Record<keyof TabParamList, [IconName, IconName]> = {
   Home: ['home', 'home-outline'],
@@ -102,7 +108,13 @@ function Tabs() {
 export default function RootNavigator() {
   const hasProfile = useAppStore((s) => !!s.profile);
   return (
-    <NavigationContainer theme={theme}>
+    <NavigationContainer
+      theme={navTheme()}
+      initialState={savedNavState}
+      onStateChange={(st) => {
+        savedNavState = st;
+      }}
+    >
       <Stack.Navigator
         screenOptions={{
           headerStyle: { backgroundColor: colors.bg },

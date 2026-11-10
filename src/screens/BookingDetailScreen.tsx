@@ -11,7 +11,7 @@ import { formatDate, formatMoney } from '../lib/format';
 import type { Language } from '../lib/types';
 import type { RootProps } from '../navigation/types';
 import { useAppStore } from '../store/useAppStore';
-import { colors, space } from '../theme/tokens';
+import { colors, space, themed } from '../theme/tokens';
 
 export default function BookingDetailScreen({ route, navigation }: RootProps<'BookingDetail'>) {
   const { t, i18n } = useTranslation();
@@ -139,7 +139,8 @@ export default function BookingDetailScreen({ route, navigation }: RootProps<'Bo
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   head: { flexDirection: 'row', alignItems: 'flex-start', gap: space.md },
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   warn: {
@@ -150,4 +151,5 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: colors.goldSoft,
   },
-});
+  }),
+);

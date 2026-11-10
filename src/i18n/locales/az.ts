@@ -33,6 +33,8 @@ const az: Dictionary = {
     genrePlaceholder: 'məs. Pop, Muğam, Caz',
     currencyTitle: 'Əsas valyutanız',
     currencyHint: 'Hər qeyddə başqa valyuta da seçə bilərsiniz.',
+    themeTitle: 'Üslubunuzu seçin',
+    themeHint: 'İstənilən vaxt Digər bölməsində dəyişə bilərsiniz.',
     start: 'Başla',
     privacy: 'Məlumatlarınız yalnız sizin hesabınızdadır. VIBE OS heç vaxt kart və ya bank məlumatı istəmir.',
   },
@@ -179,6 +181,7 @@ const az: Dictionary = {
   },
   more: {
     title: 'Digər',
+    appearance: 'Görünüş',
     license: 'Lisenziya',
     team: 'Komanda',
     tasks: 'Tapşırıqlar',
@@ -636,6 +639,14 @@ const az: Dictionary = {
       not_owner: 'Aktivləşdirməni yalnız sənətçi (sahib) edə bilər.',
       generic: 'Xəta baş verdi: {{msg}}',
     },
+  },
+  themes: {
+    stage: { name: 'Səhnə', desc: 'Tünd, qızılı işıqla' },
+    rose: { name: 'Gül qızılı', desc: 'Açıq, zərif çəhrayı və şampan' },
+    amethyst: { name: 'Ametist', desc: 'Tünd bənövşəyi, orxideya' },
+    ocean: { name: 'Gecə mavisi', desc: 'Tünd göy, parlaq mavi' },
+    graphite: { name: 'Qrafit', desc: 'Tünd boz, cəsur narıncı' },
+    daylight: { name: 'Gündüz', desc: 'Təmiz və işıqlı' },
   },
   calendar: {
     pick: 'Tarix seçin',

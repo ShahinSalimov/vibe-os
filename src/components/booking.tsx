@@ -5,16 +5,16 @@ import { useTranslation } from 'react-i18next';
 import { mailtoUrl, telUrl, whatsappUrl } from '../lib/contactLinks';
 import { formatDate, formatMoney } from '../lib/format';
 import type { BookingRequest, BookingStatus, Language } from '../lib/types';
-import { colors, radius, space } from '../theme/tokens';
+import { colors, radius, space, themed } from '../theme/tokens';
 import { EVENT_ICONS } from './rows';
 import { T, tap, type IconName } from './ui';
 
-export const BOOKING_STATUS_COLORS: Record<BookingStatus, { fg: string; bg: string }> = {
+export const BOOKING_STATUS_COLORS: Record<BookingStatus, { fg: string; bg: string }> = themed(() => ({
   new: { fg: colors.gold, bg: colors.goldSoft },
   negotiating: { fg: colors.violet, bg: colors.violetSoft },
   confirmed: { fg: colors.success, bg: colors.successSoft },
   declined: { fg: colors.textFaint, bg: colors.surfaceAlt },
-};
+}));
 
 export function StatusPill({ status }: { status: BookingStatus }) {
   const { t } = useTranslation();
@@ -108,7 +108,8 @@ export function ContactActions({ phone, email, message }: { phone: string; email
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   pill: { paddingHorizontal: space.sm, paddingVertical: 2, borderRadius: radius.pill },
   row: {
     flexDirection: 'row',
@@ -142,4 +143,5 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.border,
   },
-});
+  }),
+);

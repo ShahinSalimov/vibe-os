@@ -14,7 +14,7 @@ import { detectSensitiveIn } from '../../lib/sensitive';
 import { LANGUAGES, type Language, type RiderSection } from '../../lib/types';
 import type { RootProps } from '../../navigation/types';
 import { useAppStore } from '../../store/useAppStore';
-import { colors, font, radius, space } from '../../theme/tokens';
+import { colors, font, radius, space, themed } from '../../theme/tokens';
 
 export default function RiderScreen({ route, navigation }: RootProps<'Rider'>) {
   const { t, i18n } = useTranslation();
@@ -197,7 +197,8 @@ export default function RiderScreen({ route, navigation }: RootProps<'Rider'>) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   head: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   sectionTitle: { flex: 1, color: colors.gold, fontSize: font.bodyLg, fontWeight: '700', paddingVertical: 4 },
   itemRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
@@ -213,4 +214,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceAlt,
   },
   addLine: { flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 40 },
-});
+  }),
+);

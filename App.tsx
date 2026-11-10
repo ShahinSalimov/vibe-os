@@ -9,13 +9,16 @@ import RootNavigator from './src/navigation/RootNavigator';
 import { useReminders } from './src/notify/useReminders';
 import LockScreen from './src/screens/LockScreen';
 import { useAppStore } from './src/store/useAppStore';
-import { colors } from './src/theme/tokens';
+import { applyTheme, colors } from './src/theme/tokens';
 
 export default function App() {
   const hydrated = useAppStore((s) => s.hydrated);
   const hasProfile = useAppStore((s) => !!s.profile);
   const language = useAppStore((s) => s.settings.language);
   const appLock = useAppStore((s) => s.settings.appLock);
+  const theme = useAppStore((s) => s.settings.theme ?? 'stage');
+  // Apply before children render, so every style sheet is built with the right palette.
+  applyTheme(theme);
   const [locked, setLocked] = useState(true);
   useAutoSync();
   useReminders();
@@ -56,8 +59,8 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="light" />
-      <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      <StatusBar style={colors.mode === 'light' ? 'dark' : 'light'} />
+      <View key={hasProfile ? theme : 'onboarding'} style={{ flex: 1, backgroundColor: colors.bg }}>
         <RootNavigator />
         {showLock ? <LockScreen onUnlock={() => setLocked(false)} /> : null}
       </View>

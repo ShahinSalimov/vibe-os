@@ -18,7 +18,7 @@ const SHOTS = process.argv[2], FACE = process.argv[3];
   await chooser.setFiles(FACE); await p.waitForTimeout(800);
   await p.getByPlaceholder('məs. Aysel').fill('Aysel');
   await p.screenshot({ path: `${SHOTS}/s1-onboarding-photo.png` });
-  await click('Davam'); await click('Davam'); await click('Başla'); await p.waitForTimeout(800);
+  await click('Davam'); await click('Davam'); await click('Davam'); await click('Başla'); await p.waitForTimeout(800);
   let st = await store();
   console.log('1. photo saved in profile:', !!st.profile.photoUri, '| store version:', (await p.evaluate(() => JSON.parse(localStorage.getItem('vibe-os-store')).version)));
   await p.screenshot({ path: `${SHOTS}/s2-home-photo.png` });

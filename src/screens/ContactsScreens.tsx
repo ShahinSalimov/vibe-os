@@ -12,7 +12,7 @@ import { detectSensitiveIn, validPhone } from '../lib/sensitive';
 import { CONTACT_KINDS, type ContactKind } from '../lib/types';
 import type { RootProps } from '../navigation/types';
 import { useAppStore } from '../store/useAppStore';
-import { colors, radius, space } from '../theme/tokens';
+import { colors, radius, space, themed } from '../theme/tokens';
 
 const KIND_ICONS: Record<ContactKind, IconName> = {
   organizer: 'briefcase',
@@ -189,7 +189,8 @@ export function ContactFormScreen({ route, navigation }: RootProps<'ContactForm'
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -208,4 +209,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+  }),
+);

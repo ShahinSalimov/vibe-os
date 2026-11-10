@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { EditableAvatar } from '../components/Avatar';
+import { ThemePicker } from '../components/ThemePicker';
 import { Banner, Button, Chips, Field, Screen, T, tap, type IconName } from '../components/ui';
 import { currencySymbol } from '../lib/format';
 import {
@@ -14,7 +15,7 @@ import {
   type Language,
 } from '../lib/types';
 import { useAppStore } from '../store/useAppStore';
-import { colors, radius, space } from '../theme/tokens';
+import { colors, radius, space, themed } from '../theme/tokens';
 
 const ROLE_ICONS: Record<ArtistRole, IconName> = {
   singer: 'mic',
@@ -25,11 +26,14 @@ const ROLE_ICONS: Record<ArtistRole, IconName> = {
   manager: 'briefcase',
 };
 
-const TOTAL = 3;
+const TOTAL = 4;
 
 export default function OnboardingScreen() {
   const { t, i18n } = useTranslation();
   const completeOnboarding = useAppStore((s) => s.completeOnboarding);
+  // Theme preview during onboarding: kept in the store so the whole screen re-renders in the new colours.
+  const theme = useAppStore((s) => s.settings.theme ?? 'stage');
+  const updateSettings = useAppStore((s) => s.updateSettings);
   const [step, setStep] = useState(0);
   const [language, setLanguage] = useState<Language>(i18n.language as Language);
   const [stageName, setStageName] = useState('');
@@ -47,7 +51,7 @@ export default function OnboardingScreen() {
   const finish = () => {
     completeOnboarding(
       { stageName: stageName.trim(), role, genre: genre.trim(), photoUri },
-      { language, currency, appLock: false },
+      { language, currency, appLock: false, theme },
     );
   };
 
@@ -153,6 +157,14 @@ export default function OnboardingScreen() {
               </>
             )}
 
+            {step === 4 && (
+              <>
+                <T variant="h1">{t('onboarding.themeTitle')}</T>
+                <T color={colors.textMuted}>{t('onboarding.themeHint')}</T>
+                <ThemePicker value={theme} onChange={(id) => updateSettings({ theme: id })} />
+              </>
+            )}
+
             <View style={{ flex: 1 }} />
             <View style={styles.footer}>
               <Button
@@ -180,7 +192,8 @@ export default function OnboardingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   welcome: { flex: 1, gap: space.md, paddingTop: space.xl },
   logo: {
     width: 72,
@@ -206,4 +219,5 @@ const styles = StyleSheet.create({
   progressRow: { flexDirection: 'row', gap: space.sm, marginTop: space.sm },
   progress: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.border },
   footer: { flexDirection: 'row', gap: space.md },
-});
+  }),
+);

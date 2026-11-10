@@ -17,7 +17,7 @@ import { daysBetween, formatMoney, MONTHS, toISODate } from '../lib/format';
 import type { Language } from '../lib/types';
 import type { RootStackParamList } from '../navigation/types';
 import { useAppStore } from '../store/useAppStore';
-import { colors, radius, space } from '../theme/tokens';
+import { colors, radius, space, themed } from '../theme/tokens';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -294,7 +294,8 @@ function Stat({ label, value, color }: { label: string; value: string; color: st
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   briefing: { backgroundColor: colors.surfaceAlt, borderColor: colors.gold + '55' },
   rowCenter: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
@@ -338,4 +339,5 @@ const styles = StyleSheet.create({
   quickIcon: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
   statsRow: { flexDirection: 'row', gap: space.md },
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border },
-});
+  }),
+);

@@ -27,7 +27,7 @@ import i18n from '../../i18n';
 import type { RootProps } from '../../navigation/types';
 import { useAppStore } from '../../store/useAppStore';
 import { keepFile, removeFile } from '../../studio/files';
-import { colors, radius, space } from '../../theme/tokens';
+import { colors, radius, space, themed } from '../../theme/tokens';
 
 const TEMPLATE_FOR_EVENT: Partial<Record<EventType, ContractTemplate>> = { wedding: 'wedding', corporate: 'corporate' };
 
@@ -268,7 +268,9 @@ export default function ContractScreen({ route, navigation }: RootProps<'Contrac
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   row2: { flexDirection: 'row', gap: space.md, alignItems: 'flex-start' },
   scan: { width: '100%', height: 220, borderRadius: radius.md, backgroundColor: colors.surfaceAlt },
-});
+  }),
+);

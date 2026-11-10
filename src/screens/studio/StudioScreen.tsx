@@ -8,9 +8,9 @@ import { SONG_STAGES, type SongStage } from '../../lib/types';
 import type { RootProps } from '../../navigation/types';
 import { useAppStore } from '../../store/useAppStore';
 import { formatDuration, setlistTotals } from '../../studio/format';
-import { colors, radius, space } from '../../theme/tokens';
+import { colors, radius, space, themed } from '../../theme/tokens';
 
-export const STAGE_COLORS: Record<SongStage, string> = {
+export const STAGE_COLORS: Record<SongStage, string> = themed(() => ({
   idea: colors.textMuted,
   writing: colors.violet,
   demo: colors.violet,
@@ -19,7 +19,7 @@ export const STAGE_COLORS: Record<SongStage, string> = {
   mixing: colors.warning,
   mastering: colors.warning,
   released: colors.success,
-};
+}));
 
 export function StageProgress({ stage }: { stage: SongStage }) {
   const idx = SONG_STAGES.indexOf(stage);
@@ -189,7 +189,8 @@ export default function StudioScreen({ route, navigation }: RootProps<'Studio'>)
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -219,4 +220,5 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     backgroundColor: colors.goldSoft,
   },
-});
+  }),
+);

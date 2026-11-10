@@ -4,7 +4,7 @@ import { Animated, Easing, Modal, Pressable, StyleSheet, View } from 'react-nati
 import { useTranslation } from 'react-i18next';
 import { Button, T, tap } from '../components/ui';
 import type { Language } from '../lib/types';
-import { colors, radius, space } from '../theme/tokens';
+import { colors, radius, space, themed } from '../theme/tokens';
 import { useSpeech, type SpeechError } from './useSpeech';
 
 /**
@@ -132,7 +132,8 @@ export function VoiceSheet({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: colors.surface,
@@ -150,4 +151,5 @@ const styles = StyleSheet.create({
   mic: { width: 100, height: 100, borderRadius: 50, backgroundColor: colors.gold, alignItems: 'center', justifyContent: 'center' },
   transcript: { textAlign: 'center' },
   buttons: { flexDirection: 'row', gap: space.md, alignSelf: 'stretch' },
-});
+  }),
+);

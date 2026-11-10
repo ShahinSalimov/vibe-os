@@ -13,7 +13,7 @@ import type { Language } from '../lib/types';
 import type { RootProps } from '../navigation/types';
 import { useAppStore } from '../store/useAppStore';
 import { emptyCloud } from '../store/migrate';
-import { colors, space } from '../theme/tokens';
+import { colors, space, themed } from '../theme/tokens';
 
 export function syncErrorText(t: TFunction, r: SyncResult): string | null {
   if (r.ok) return null;
@@ -191,7 +191,8 @@ export default function AccountScreen({ navigation }: RootProps<'Account'>) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   center: { alignItems: 'center', gap: space.sm, paddingVertical: space.xl },
   badge: {
     width: 64,
@@ -201,4 +202,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+  }),
+);

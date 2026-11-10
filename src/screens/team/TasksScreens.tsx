@@ -14,7 +14,7 @@ import { daysUntil } from '../../notify/plan';
 import { useAppStore } from '../../store/useAppStore';
 import { useLicense } from '../../license/useLicense';
 import { useRole } from '../../team/useRole';
-import { colors, radius, space } from '../../theme/tokens';
+import { colors, radius, space, themed } from '../../theme/tokens';
 
 /** Can this user tick the task? Managers: any task. Others: only their own. Local (no team): always. */
 function canTick(task: Task, write: boolean, myId: string | null, inTeam: boolean, licensed: boolean) {
@@ -211,7 +211,8 @@ export function TaskFormScreen({ route, navigation }: RootProps<'TaskForm'>) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -223,4 +224,5 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   doneText: { textDecorationLine: 'line-through', color: colors.textMuted },
-});
+  }),
+);

@@ -9,6 +9,7 @@ import type { RootStackParamList } from '../navigation/types';
 import { Platform, StyleSheet, Switch, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { EditableAvatar } from '../components/Avatar';
+import { ThemePicker } from '../components/ThemePicker';
 import { Button, Card, Chips, Screen, SectionHeader, T, type IconName } from '../components/ui';
 import { confirmAction, notify } from '../lib/confirm';
 import { currencySymbol } from '../lib/format';
@@ -16,7 +17,7 @@ import { CURRENCIES, LANGUAGES, type Language } from '../lib/types';
 import { useLicense } from '../license/useLicense';
 import { requestReminderPermission } from '../notify/scheduler';
 import { useAppStore } from '../store/useAppStore';
-import { colors, space } from '../theme/tokens';
+import { colors, space, themed } from '../theme/tokens';
 
 const NEXT_MODULES: { key: string; icon: IconName }[] = [
   { key: 'moduleTeam', icon: 'people' },
@@ -141,6 +142,9 @@ export default function MoreScreen() {
         <NavRow icon="people" label={t('more.contacts')} value={contactsCount ? String(contactsCount) : ''} onPress={() => nav.navigate('Contacts')} />
       </Card>
 
+      <SectionHeader title={t('more.appearance')} />
+      <ThemePicker value={settings.theme ?? 'stage'} onChange={(id) => updateSettings({ theme: id })} />
+
       <SectionHeader title={t('more.language')} />
       <Chips
         value={settings.language}
@@ -247,9 +251,11 @@ function NavRow({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() =>
+  StyleSheet.create({
   navRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, minHeight: 56 },
   profile: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   moduleRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, minHeight: 48 },
-});
+  }),
+);
