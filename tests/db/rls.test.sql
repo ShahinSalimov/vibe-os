@@ -279,4 +279,62 @@ select pg_temp.login('00000000-0000-0000-0000-00000000000e');
 select pg_temp.ok((select count(*) = 0 from public.tasks) and (select count(*) = 0 from public.events), 'removed member loses access');
 reset role;
 \echo PASS 13 team: one-time invites, owner-only management, owner protected, task permissions, removal
+-- ---------- 14. licensing: trial, expiry, activation code, admin ----------
+insert into auth.users values ('00000000-0000-0000-0000-0000000000ad', 'seller@x.az');
+insert into public.platform_admins values ('00000000-0000-0000-0000-0000000000ad');
+set role authenticated;
+select pg_temp.login('00000000-0000-0000-0000-0000000000a1');
+select pg_temp.ok((select status = 'trial' and trial_ends_at > now() + interval '2 days' from public.licenses where workspace_id = :'wsa_create_workspace'), 'new workspace has 3-day trial');
+select pg_temp.ok((select count(*) = 1 from public.licenses), 'owner sees only own licence');
+-- non-admins cannot use admin functions or tables
+select pg_temp.expect_error($q$select public.admin_create_code('x')$q$, 'not_admin');
+select pg_temp.expect_error($q$select * from public.admin_overview()$q$, 'not_admin');
+select pg_temp.expect_error($q$select count(*) from public.license_codes$q$, 'permission denied');
+select pg_temp.expect_error($q$insert into public.platform_admins values ('00000000-0000-0000-0000-0000000000a1')$q$, 'permission denied');
+select pg_temp.expect_error(format($q$update public.licenses set status = 'active' where workspace_id = '%s'$q$, :'wsa_create_workspace'), 'permission denied');
+reset role;
+-- trial expires -> business writes blocked, reads still work, public bookings still arrive
+-- (age the rate-limit test requests from section 10 so the hourly limit does not interfere)
+update public.booking_requests set created_at = now() - interval '2 hours';
+update public.licenses set trial_ends_at = now() - interval '1 minute' where workspace_id = :'wsa_create_workspace';
+set role authenticated;
+select pg_temp.login('00000000-0000-0000-0000-0000000000a1');
+select pg_temp.expect_error(format($q$insert into public.events (id, workspace_id, title, type, date, currency) values ('evt-expired-1', '%s', 'x', 'concert', current_date, 'AZN')$q$, :'wsa_create_workspace'), 'license_required');
+select pg_temp.expect_error($q$update public.money_records set note = 'x' where id = 'rec-aysel-0001'$q$, 'license_required');
+select pg_temp.expect_error($q$update public.booking_requests set status = 'confirmed' where source = 'link'$q$, 'license_required');
+select pg_temp.ok((select count(*) >= 1 from public.money_records), 'reads still work after trial');
+reset role;
+set role anon;
+select public.submit_booking('aysel', 'Late lead', '+994551112299', '', 'wedding', current_date + 40, '', '', null, null, 'AZN', '', 'az') is not null as lead_ok \gset
+reset role;
+select pg_temp.ok(:'lead_ok'::boolean, 'public booking still accepted after trial');
+-- other artist (still in trial) is not affected
+set role authenticated;
+select pg_temp.login('00000000-0000-0000-0000-0000000000b1');
+insert into public.events (id, workspace_id, title, type, date, currency) values ('evt-b-trial-1', :'wsb_create_workspace', 'B konsert', 'concert', current_date + 5, 'USD');
+-- admin creates a code; manager cannot redeem; owner redeems; reuse fails
+select pg_temp.login('00000000-0000-0000-0000-0000000000ad');
+select public.admin_create_code('Aysel — Instagram, ödədi') as lic \gset
+select pg_temp.ok(:'lic' ~ '^[A-HJ-NP-Z2-9]{12}$', 'licence code format');
+select pg_temp.ok((select count(*) >= 2 from public.admin_overview()), 'admin sees all artists');
+select pg_temp.login('00000000-0000-0000-0000-0000000000d1'); -- manager of A
+select pg_temp.expect_error(format($q$select public.redeem_license('%s', '%s')$q$, :'lic', :'wsa_create_workspace'), 'not_owner');
+select pg_temp.login('00000000-0000-0000-0000-0000000000a1');
+select public.redeem_license(lower(substr(:'lic',1,6) || '-' || substr(:'lic',7)), :'wsa_create_workspace');
+select pg_temp.ok((select status = 'active' from public.licenses where workspace_id = :'wsa_create_workspace'), 'licence active after code');
+insert into public.events (id, workspace_id, title, type, date, currency) values ('evt-after-lic', :'wsa_create_workspace', 'Aktiv', 'concert', current_date + 9, 'AZN');
+select pg_temp.login('00000000-0000-0000-0000-0000000000b1');
+select pg_temp.expect_error(format($q$select public.redeem_license('%s', '%s')$q$, :'lic', :'wsb_create_workspace'), 'code_used');
+select pg_temp.expect_error(format($q$select public.redeem_license('AAAAAAAAAAAA', '%s')$q$, :'wsb_create_workspace'), 'code_not_found');
+-- admin suspends -> blocked again; revoked code cannot be redeemed
+select pg_temp.login('00000000-0000-0000-0000-0000000000ad');
+select public.admin_set_license(:'wsa_create_workspace', 'suspended');
+select public.admin_create_code('revoked one') as lic2 \gset
+select public.admin_revoke_code(:'lic2');
+select pg_temp.login('00000000-0000-0000-0000-0000000000a1');
+select pg_temp.expect_error(format($q$insert into public.events (id, workspace_id, title, type, date, currency) values ('evt-susp-1', '%s', 'x', 'concert', current_date, 'AZN')$q$, :'wsa_create_workspace'), 'license_required');
+select pg_temp.login('00000000-0000-0000-0000-0000000000b1');
+select pg_temp.expect_error(format($q$select public.redeem_license('%s', '%s')$q$, :'lic2', :'wsb_create_workspace'), 'code_not_found');
+reset role;
+\echo PASS 14 licensing: trial, expiry blocks writes (not reads, not leads), one-time codes, admin-only control
 \echo ALL DATABASE TESTS PASSED
